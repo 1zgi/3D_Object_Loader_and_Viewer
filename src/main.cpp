@@ -78,6 +78,7 @@ void InitalizeProgram()
         cout << "glad was not initialized" << endl;
         exit(1);
     }
+   
 
     GetOpenGLVersionInfo();
 }
@@ -96,6 +97,11 @@ void Input()
             gQuit = true;
         }
     }
+
+    // Clear the screen || Changing Window Color
+    glClearColor(0.07f, 0.13f, 0.17f, 1.0f);// Set the clear color each frame
+    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);// Clear color buffer and depth buffer
+
 }
 
 void MainLoop()
