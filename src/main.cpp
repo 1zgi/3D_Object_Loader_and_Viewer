@@ -1,12 +1,25 @@
 //Third Party Libraries
 #include <glad/glad.h>
 #include <SDL.h>
+#include<GLFW/glfw3.h>
+#include<stb/stb_image.h>
+#include<glm/glm.hpp>
+#include<glm/gtc/matrix_transform.hpp>
+#include<glm/gtc/type_ptr.hpp>
 
 //c++ libs (STL)
 #include <iostream>
 #include <vector>
 #include <fstream>
 #include <string>
+
+//Headers
+#include "headers/ClassShader.h"
+#include "headers/VAO.h"
+#include "headers/VAO.h"
+#include "headers/EBO.h"
+
+
 
 
 #undef main
@@ -106,6 +119,7 @@ void Input()
 
 void MainLoop()
 {
+
     while (!gQuit)
     {
         Input();//Handle input
