@@ -3,18 +3,19 @@
 // Reads a text file and outputs a string with everything in the text file
 std::string get_file_contents(const char* filename)
 {
-    std::ifstream in(filename, std::ios::binary);
-    if (in)
+    std::ifstream in(filename, std::ios::in | std::ios::ate); // Open in text mode and at end to get size
+    if (!in)
     {
-        std::string contents;
-        in.seekg(0, std::ios::end);
-        contents.resize(in.tellg());
-        in.seekg(0, std::ios::beg);
-        in.read(&contents[0], contents.size());
-        in.close();
-        return(contents);
+        throw std::runtime_error("Failed to open file: " + std::string(filename)); //File Not Found
     }
-    throw(errno);
+
+    std::string contents;
+    contents.resize(in.tellg());  // Get size from current (end) position
+    in.seekg(0, std::ios::beg);   // Move to start of the file
+    in.read(&contents[0], contents.size());
+    in.close();
+
+    return contents;
 }
 
 // Constructor that build the Shader Program from 2 different shaders
