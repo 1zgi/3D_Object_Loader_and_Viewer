@@ -18,8 +18,7 @@
 #include "headers/VAO.h"
 #include "headers/VAO.h"
 #include "headers/EBO.h"
-
-
+#include "headers/Camera.h"
 
 
 #undef main
@@ -36,6 +35,12 @@ SDL_GLContext gOpenGLContext = nullptr;
 //Main loop flag
 bool gQuit = false; // if true, we quit
 
+// Shader
+// Program Object (for our shaders)
+// Stores the unique id for the graphics pipeline
+// Used for OpenGL draw calls.
+GLuint gGraphicsPipelineShaderProgram = 0;
+
 //Some Info's
 void GetOpenGLVersionInfo()
 {
@@ -43,6 +48,14 @@ void GetOpenGLVersionInfo()
     cout << "Renderer: " << glGetString(GL_RENDERER) << endl;
     cout << "Version: " << glGetString(GL_VERSION) << endl;
     cout << "Shading Language: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << endl;
+}
+
+void Camera_(Camera camera, SDL_Window* window, Shader shaderProgram)
+{
+    // Handles camera inputs
+    camera.Inputs(window);
+    // Updates and exports the camera matrix to the Vertex Shader
+    camera.Matrix(45.0f, 0.1f, 100.0f, shaderProgram, "camMatrix");
 }
 
 void InitalizeProgram()
@@ -91,7 +104,13 @@ void InitalizeProgram()
         cout << "glad was not initialized" << endl;
         exit(1);
     }
-   
+
+    // Generates Shader object using shaders default.vert and default.frag
+    Shader shaderProgram("src/shaders/default.vert", "src/shaders/default.frag");
+
+    // Creates camera object
+    Camera camera(gScreenWidth, gScreenHeight, glm::vec3(0.0f, 0.0f, 2.0f));
+    Camera_(camera, gGraphicsApplicationWindow,shaderProgram);
 
     GetOpenGLVersionInfo();
 }
@@ -112,19 +131,37 @@ void Input()
     }
 
     // Clear the screen || Changing Window Color
-    glClearColor(0.07f, 0.13f, 0.17f, 1.0f);// Set the clear color each frame
-    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);// Clear color buffer and depth buffer
+   // glClearColor(0.07f, 0.13f, 0.17f, 1.0f);// Set the clear color each frame
+    //glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);// Clear color buffer and depth buffer
 
+}
+
+void PreDraw()//Responsible for setting OpenGL state
+{
+    // Disable depth test and face culling
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_CULL_FACE);
+
+    // Initialize clear color
+    // This is the background of the screen
+    glViewport(0, 0, gScreenWidth, gScreenHeight);
+    glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
+
+    // Clear color buffer and Depth Buffer
+    glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);// Change background color
+
+    // Use our shader
+    glUseProgram(gGraphicsPipelineShaderProgram);
 }
 
 void MainLoop()
 {
-
     while (!gQuit)
     {
         Input();//Handle input
 
-        //PreDraw();//Setup anything(i.e. OpenGL State) that needs to take place before draw calls
+
+        PreDraw();//Setup anything(i.e. OpenGL State) that needs to take place before draw calls
 
         //Draw();//Draw Calls in OpenGL
 
