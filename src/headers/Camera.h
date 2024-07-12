@@ -39,7 +39,7 @@ public:
     void updateMatrix(float FOVdeg, float nearPlane, float farPlane);
 
     // Updates and exports the camera matrix to the Vertex Shader
-    void Matrix(float FOVdeg, float nearPlane, float farPlane, Shader& shader, const char* uniform);
+    void Matrix(Shader& shader, const char* uniform);
     // Handles camera inputs
     void Inputs(SDL_Window* window);
 };
