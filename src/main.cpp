@@ -92,7 +92,7 @@ void Camera_(Camera camera, SDL_Window* window, Shader shaderProgram)
     // Handles camera inputs
     camera.Inputs(window);
     // Updates and exports the camera matrix to the Vertex Shader
-    camera.Matrix(45.0f, 0.1f, 100.0f, shaderProgram, "camMatrix");
+    camera.updateMatrix(45.0f, 0.1f, 100.0f);
 }
 
 
