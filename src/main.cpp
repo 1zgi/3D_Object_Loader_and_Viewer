@@ -14,12 +14,7 @@
 #include <string>
 
 //Headers
-#include "headers/ClassShader.h"
-#include "headers/VAO.h"
-#include "headers/VAO.h"
-#include "headers/EBO.h"
-#include "headers/Camera.h"
-
+#include"headers/Model.h"
 
 #undef main
 using namespace std;
@@ -41,43 +36,6 @@ bool gQuit = false; // if true, we quit
 // Used for OpenGL draw calls.
 GLuint gGraphicsPipelineShaderProgram = 0;
 
-
-// Indices for vertices order
-GLuint indices[] =
-{
-    0, 1, 2, // Bottom side
-    0, 2, 3, // Bottom side
-    4, 6, 5, // Left side
-    7, 9, 8, // Non-facing side
-    10, 12, 11, // Right side
-    13, 15, 14 // Facing side
-};
-
-// Vertices coordinates
-GLfloat vertices[] =
-{ //     COORDINATES     /        COLORS          /    TexCoord   /        NORMALS       //
-    -0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f, 	 0.0f, 0.0f,      0.0f, -1.0f, 0.0f, // Bottom side
-    -0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	 0.0f, 5.0f,      0.0f, -1.0f, 0.0f, // Bottom side
-     0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	 5.0f, 5.0f,      0.0f, -1.0f, 0.0f, // Bottom side
-     0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f,	 5.0f, 0.0f,      0.0f, -1.0f, 0.0f, // Bottom side
-
-    -0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f, 	 0.0f, 0.0f,     -0.8f, 0.5f,  0.0f, // Left Side
-    -0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	 5.0f, 0.0f,     -0.8f, 0.5f,  0.0f, // Left Side
-     0.0f, 0.8f,  0.0f,     0.92f, 0.86f, 0.76f,	 2.5f, 5.0f,     -0.8f, 0.5f,  0.0f, // Left Side
-
-    -0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	 5.0f, 0.0f,      0.0f, 0.5f, -0.8f, // Non-facing side
-     0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	 0.0f, 0.0f,      0.0f, 0.5f, -0.8f, // Non-facing side
-     0.0f, 0.8f,  0.0f,     0.92f, 0.86f, 0.76f,	 2.5f, 5.0f,      0.0f, 0.5f, -0.8f, // Non-facing side
-
-     0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	 0.0f, 0.0f,      0.8f, 0.5f,  0.0f, // Right side
-     0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f,	 5.0f, 0.0f,      0.8f, 0.5f,  0.0f, // Right side
-     0.0f, 0.8f,  0.0f,     0.92f, 0.86f, 0.76f,	 2.5f, 5.0f,      0.8f, 0.5f,  0.0f, // Right side
-
-     0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f,	 5.0f, 0.0f,      0.0f, 0.5f,  0.8f, // Facing side
-    -0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f, 	 0.0f, 0.0f,      0.0f, 0.5f,  0.8f, // Facing side
-     0.0f, 0.8f,  0.0f,     0.92f, 0.86f, 0.76f,	 2.5f, 5.0f,      0.0f, 0.5f,  0.8f  // Facing side
-};
-
 //Some Info's
 void GetOpenGLVersionInfo()
 {
@@ -87,36 +45,15 @@ void GetOpenGLVersionInfo()
     cout << "Shading Language: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << endl;
 }
 
-void Camera_(Camera camera, SDL_Window* window, Shader shaderProgram)
+
+void Camera_(Camera& camera, SDL_Window* window, Shader& shaderProgram, Model& model)
 {
     // Handles camera inputs
     camera.Inputs(window);
     // Updates and exports the camera matrix to the Vertex Shader
     camera.updateMatrix(45.0f, 0.1f, 100.0f);
-}
 
-
-void VertexSpecification()
-{
-    // Generates Vertex Array Object and binds it
-    VAO VAO1;
-    VAO1.Bind();
-    // Generates Vertex Buffer Object and links it to vertices
-    VBO VBO1(vertices, sizeof(vertices));
-    // Generates Element Buffer Object and links it to indices
-    EBO EBO1(indices, sizeof(indices));
-    // Links VBO attributes such as coordinates and colors to VAO
-    VAO1.LinkAttrib(VBO1, 0, 3, GL_FLOAT, 11 * sizeof(float), (void*)0);
-    VAO1.LinkAttrib(VBO1, 1, 3, GL_FLOAT, 11 * sizeof(float), (void*)(3 * sizeof(float)));
-    VAO1.LinkAttrib(VBO1, 2, 2, GL_FLOAT, 11 * sizeof(float), (void*)(6 * sizeof(float)));
-    VAO1.LinkAttrib(VBO1, 3, 3, GL_FLOAT, 11 * sizeof(float), (void*)(8 * sizeof(float)));
-    // Unbind all to prevent accidentally modifying them
-    VAO1.Unbind();
-    VBO1.Unbind();
-    EBO1.Unbind();
-
-
-
+    model.Draw(shaderProgram, camera);
 }
 
 
@@ -167,13 +104,7 @@ void InitalizeProgram()
         exit(1);
     }
 
-    // Generates Shader object using shaders default.vert and default.frag
-    Shader shaderProgram("src/shaders/default.vert", "src/shaders/default.frag");
-
-    // Creates camera object
-    Camera camera(gScreenWidth, gScreenHeight, glm::vec3(0.0f, 0.0f, 2.0f));
-    Camera_(camera, gGraphicsApplicationWindow,shaderProgram);
-
+    
     GetOpenGLVersionInfo();
 }
 
@@ -192,14 +123,11 @@ void Input()
         }
     }
 
-    // Clear the screen || Changing Window Color
-   // glClearColor(0.07f, 0.13f, 0.17f, 1.0f);// Set the clear color each frame
-    //glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);// Clear color buffer and depth buffer
-
 }
 
-void PreDraw()//Responsible for setting OpenGL state
+void PreDraw(Camera camera, Shader shaderProgram,Model model)//Responsible for setting OpenGL state
 {
+
     // Disable depth test and face culling
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
@@ -214,16 +142,40 @@ void PreDraw()//Responsible for setting OpenGL state
 
     // Use our shader
     glUseProgram(gGraphicsPipelineShaderProgram);
+
+    Camera_(camera, gGraphicsApplicationWindow, shaderProgram, model);
+
 }
 
 void MainLoop()
 {
+    // Generates Shader object using shaders default.vert and default.frag
+    Shader shaderProgram("src/Shaders/default.vert", "src/Shaders/default.frag", "src/Shaders/default.geom");
+
+    // Take care of all the light related things
+    glm::vec4 lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    glm::vec3 lightPos = glm::vec3(0.5f, 0.5f, 0.5f);
+    glm::mat4 lightModel = glm::mat4(1.0f);
+    lightModel = glm::translate(lightModel, lightPos);
+
+    shaderProgram.Activate();
+    glUniform4f(glGetUniformLocation(shaderProgram.ID, "lightColor"), lightColor.x, lightColor.y, lightColor.z, lightColor.w);
+    glUniform3f(glGetUniformLocation(shaderProgram.ID, "lightPos"), lightPos.x, lightPos.y, lightPos.z);
+
+    // Enables the Depth Buffer
+    glEnable(GL_DEPTH_TEST);
+
+    // Creates camera object
+    Camera camera(gScreenWidth, gScreenHeight, glm::vec3(0.0f, 0.0f, 2.0f));
+
+    Model model("models/sword/scene.gltf");
+
     while (!gQuit)
     {
         Input();//Handle input
 
 
-        PreDraw();//Setup anything(i.e. OpenGL State) that needs to take place before draw calls
+        PreDraw(camera,shaderProgram,model);//Setup anything(i.e. OpenGL State) that needs to take place before draw calls
 
         //Draw();//Draw Calls in OpenGL
 
@@ -243,7 +195,7 @@ int main(int argc, char* args[]) {
     InitalizeProgram();
 
     //2. Setup our geometry
-    VertexSpecification();
+    //VertexSpecification();
 
     //3. Create our graphics pipeline
     // - At a minimum, this means the vertex and fragment shader
