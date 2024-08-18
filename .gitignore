@@ -5,4 +5,5 @@
 *.user
 *.vssscc
 *packages.config
+common
 x64
