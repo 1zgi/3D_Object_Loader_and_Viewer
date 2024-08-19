@@ -7,7 +7,6 @@
 #include <imgui_impl_opengl3.h>
 #include <iostream>
 #include "Renderer.h"
-#include "Cube.h"  // Assuming you have a Cube class
 #include "Window.h"
 #include <SDL.h>
 #include <SDL_opengl.h>
