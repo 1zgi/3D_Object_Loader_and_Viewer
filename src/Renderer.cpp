@@ -83,7 +83,7 @@ bool Renderer::init() {
     return true;
 }
 
-void Renderer::render(Cube& cube) {
+void Renderer::render(Model& model) {
     // Clear the buffer
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -100,11 +100,11 @@ void Renderer::render(Cube& cube) {
 
     // Print the cube position
     if (!positionPrinted) {
-        glm::vec4 cubePosition_worldspace = Model * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);// Calculate cube's position in world space (assuming origin in model space)
-        std::cout << "Cube Position in World Space: ("
-            << cubePosition_worldspace.x << ", "
-            << cubePosition_worldspace.y << ", "
-            << cubePosition_worldspace.z << ")" << std::endl;
+        glm::vec4 modelPosition_worldspace = Model * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);// Calculate model's position in world space (assuming origin in model space)
+        std::cout << "Model Position in World Space: ("
+            << modelPosition_worldspace.x << ", "
+            << modelPosition_worldspace.y << ", "
+            << modelPosition_worldspace.z << ")" << std::endl;
         positionPrinted = true;  // Set the flag to true
     }
 
@@ -117,8 +117,8 @@ void Renderer::render(Cube& cube) {
     // Update the light position in the shader
     glUniform3f(LightID, lightPos.x, lightPos.y, lightPos.z);
 
-    // Render the cube
-    cube.draw();
+    // Render the model
+    model.draw();
 
     // Check for OpenGL errors
     GLenum err;

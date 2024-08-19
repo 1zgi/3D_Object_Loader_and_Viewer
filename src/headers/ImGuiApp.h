@@ -17,7 +17,7 @@ public:
     ImGuiApp();
     ~ImGuiApp();
     bool Init(Window* window);
-    void Run(Renderer* renderer, Cube* cube);
+    void Run(Renderer* renderer, Model* model);
     void Cleanup();
 
 private:

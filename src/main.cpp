@@ -1,8 +1,8 @@
 #include "headers/Window.h"
 #include "headers/Renderer.h"
-#include "headers/Cube.h"
 #include "headers/ImGuiApp.h"
 #include "headers/Camera.h"
+#include "headers/Model.h" 
 
 const int SCREEN_WIDTH = 1024;
 const int SCREEN_HEIGHT = 768;
@@ -22,8 +22,7 @@ int main(int argc, char* args[]) {
         return -1;
     }
 
-    Cube cube;
-    cube.init();
+    Model model("models/obj/cube.obj");
 
     bool running = true;
     bool mouseCapturedByImGui = false;
@@ -62,9 +61,10 @@ int main(int argc, char* args[]) {
         }
         const Uint8* state = SDL_GetKeyboardState(NULL);
         camera.handleKeyboardInput(state, deltaTime);
-        
+       
+        renderer.render(model);
      
-        imguiApp.Run(&renderer, &cube);
+        imguiApp.Run(&renderer, &model);
         
     }
 
