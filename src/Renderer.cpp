@@ -95,7 +95,6 @@ void Renderer::render(Model& model) {
     // Compute the MVP matrix
     glm::mat4 Model = glm::rotate(glm::mat4(1.0f), (float)SDL_GetTicks() / 1000.0f * glm::radians(50.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     glm::mat4 View = camera.getViewMatrix();
-    printMatrix(View);
     glm::mat4 MVP = Projection * View * Model;
 
     // Print the cube position
@@ -146,16 +145,6 @@ void Renderer::cleanup() {
     }
 
     // Any additional cleanup for OpenGL resources
-}
-
-void Renderer::printMatrix(const glm::mat4& matrix) {
-    std::cout << "Matrix:\n";
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
-            std::cout << matrix[i][j] << " ";
-        }
-        std::cout << std::endl;
-    }
 }
 
 void Renderer::setLightPosition(const glm::vec3& position) {

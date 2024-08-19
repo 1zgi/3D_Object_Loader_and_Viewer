@@ -14,7 +14,6 @@ public:
     bool init();
     void render(Model& model);
     void cleanup();
-    void printMatrix(const glm::mat4& matrix);
     void setLightPosition(const glm::vec3& position);
     Window& getWindow();
 
