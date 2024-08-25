@@ -7,6 +7,7 @@
 #include <iostream>
 #include <GL/glew.h>
 #include <glm/glm.hpp>
+#include <glm/ext/matrix_transform.hpp> // Include for transformations
 #include "tiny_obj_loader.h"
 
 class Model {
@@ -47,11 +48,19 @@ private:
     std::vector<float> normals;
     std::vector<float> texcoords;
 
+    // Indices for drawing triangles
+    std::vector<unsigned int> indices;
+
+    // Material information
+    std::vector<tinyobj::material_t> materials;
+    std::vector<int> face_material_ids; // Stores material ID for each face
+
     // OpenGL handles for the model's buffers
     GLuint vao;
     GLuint vbo;
     GLuint nbo;
     GLuint tbo;
+    GLuint ebo;
 
     // Model transformation attributes
     glm::vec3 position;

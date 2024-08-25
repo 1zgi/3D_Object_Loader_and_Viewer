@@ -15,7 +15,7 @@ Renderer::Renderer(Window& window, Camera& camera)
     ambientLightIntensity(0.2f, 0.2f, 0.2f),
     vao(0),
     vbo(0),
-    positionPrinted(false){}  // Initialize the flag to false
+    positionPrinted(false) {}
 
 Renderer::~Renderer() {
     cleanup();
@@ -34,92 +34,61 @@ bool Renderer::init() {
     glCullFace(GL_BACK);
     glFrontFace(GL_CCW);
 
-    // Load shaders
     programID = LoadShaders("src/shaders/vert.glsl", "src/shaders/frag.glsl");
     if (programID == 0) {
         fprintf(stderr, "Failed to load shaders\n");
         return false;
     }
 
-    // Get uniform locations
     MatrixID = glGetUniformLocation(programID, "MVP");
     ViewMatrixID = glGetUniformLocation(programID, "V");
     ModelMatrixID = glGetUniformLocation(programID, "M");
     LightID = glGetUniformLocation(programID, "LightPosition_worldspace");
     AmbientLightID = glGetUniformLocation(programID, "AmbientLightIntensity");
 
-    // Check uniform locations
-    if (MatrixID == -1) std::cerr << "Failed to get uniform location for MVP\n";
-    if (ViewMatrixID == -1) std::cerr << "Failed to get uniform location for V\n";
-    if (ModelMatrixID == -1) std::cerr << "Failed to get uniform location for M\n";
-    if (LightID == -1) std::cerr << "Failed to get uniform location for LightPosition_worldspace\n";
-    if (AmbientLightID == -1) std::cerr << "Failed to get uniform location for AmbientLightIntensity\n";
-
-    // If any uniform location is not found, return false
     if (MatrixID == -1 || ViewMatrixID == -1 || ModelMatrixID == -1 || LightID == -1 || AmbientLightID == -1) {
         std::cerr << "Failed to get uniform locations\n";
         return false;
     }
 
-    // Use the shader program
     glUseProgram(programID);
-
-    // Set the initial light properties
     glUniform3f(LightID, lightPos.x, lightPos.y, lightPos.z);
     glUniform3f(AmbientLightID, ambientLightIntensity.x, ambientLightIntensity.y, ambientLightIntensity.z);
-
-    // Initialize VAO and VBO
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
-
-    glGenBuffers(1, &vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-
-    // Assuming some vertex data setup here...
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
 
     return true;
 }
 
 void Renderer::render(Model& model) {
-    // Clear the buffer
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // Set the viewport
     int width, height;
     SDL_GetWindowSize(window.getWindow(), &width, &height);
     glViewport(0, 0, width, height);
 
-    // Compute the MVP matrix
-    glm::mat4 Model = glm::rotate(glm::mat4(1.0f), (float)SDL_GetTicks() / 1000.0f * glm::radians(50.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    // Rotate the model around its origin
+    static float rotation = 0.0f;
+    rotation += 10.0f * 0.016f;  // Decrease the rotation speed to 10 degrees per second
+    model.setRotation(rotation, glm::vec3(0.0f, 1.0f, 0.0f));
+
+    glm::mat4 Model = model.getModelMatrix();
     glm::mat4 View = camera.getViewMatrix();
     glm::mat4 MVP = Projection * View * Model;
 
-    // Print the cube position
+    glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
+    glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &View[0][0]);
+    glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &Model[0][0]);
+
     if (!positionPrinted) {
-        glm::vec4 modelPosition_worldspace = Model * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);// Calculate model's position in world space (assuming origin in model space)
+        glm::vec4 modelPosition_worldspace = Model * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
         std::cout << "Model Position in World Space: ("
             << modelPosition_worldspace.x << ", "
             << modelPosition_worldspace.y << ", "
             << modelPosition_worldspace.z << ")" << std::endl;
-        positionPrinted = true;  // Set the flag to true
+        positionPrinted = true;
     }
 
-    // Pass the MVP matrix to the shader
-    glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
-    glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &View[0][0]);
-    glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &Model[0][0]);
-    glUseProgram(programID);
-
-    // Update the light position in the shader
-    glUniform3f(LightID, lightPos.x, lightPos.y, lightPos.z);
-
-    // Render the model
     model.draw();
 
-    // Check for OpenGL errors
     GLenum err;
     while ((err = glGetError()) != GL_NO_ERROR) {
         std::cerr << "OpenGL error: " << err << std::endl;
@@ -127,24 +96,10 @@ void Renderer::render(Model& model) {
 }
 
 void Renderer::cleanup() {
-    // Cleanup shaders
     if (programID) {
         glDeleteProgram(programID);
         programID = 0;
     }
-
-    // Cleanup VAO and VBO
-    if (vbo) {
-        glDeleteBuffers(1, &vbo);
-        vbo = 0;
-    }
-
-    if (vao) {
-        glDeleteVertexArrays(1, &vao);
-        vao = 0;
-    }
-
-    // Any additional cleanup for OpenGL resources
 }
 
 void Renderer::setLightPosition(const glm::vec3& position) {

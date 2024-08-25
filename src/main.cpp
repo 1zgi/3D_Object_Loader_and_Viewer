@@ -22,7 +22,7 @@ int main(int argc, char* args[]) {
         return -1;
     }
 
-    Model model("models/obj/cube.obj");
+    Model model("models/obj/KrakenChest2_obj.obj");
 
     bool running = true;
     bool mouseCapturedByImGui = false;
