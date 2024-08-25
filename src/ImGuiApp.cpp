@@ -31,7 +31,7 @@ bool ImGuiApp::Init(Window* window) {
     return true;
 }
 
-void ImGuiApp::Run(Renderer* renderer, Cube* cube) {
+void ImGuiApp::Run(Renderer* renderer, Model* model) {
 
         // Poll and handle events
         SDL_Event event;
@@ -57,7 +57,7 @@ void ImGuiApp::Run(Renderer* renderer, Cube* cube) {
         renderer->setLightPosition(lightPosition);
 
         // Render your scene
-        renderer->render(*cube);
+        renderer->render(*model);
 
         // Rendering ImGui
         ImGui::Render();

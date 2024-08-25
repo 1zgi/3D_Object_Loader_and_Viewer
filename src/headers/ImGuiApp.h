@@ -7,7 +7,6 @@
 #include <imgui_impl_opengl3.h>
 #include <iostream>
 #include "Renderer.h"
-#include "Cube.h"  // Assuming you have a Cube class
 #include "Window.h"
 #include <SDL.h>
 #include <SDL_opengl.h>
@@ -17,7 +16,7 @@ public:
     ImGuiApp();
     ~ImGuiApp();
     bool Init(Window* window);
-    void Run(Renderer* renderer, Cube* cube);
+    void Run(Renderer* renderer, Model* model);
     void Cleanup();
 
 private:

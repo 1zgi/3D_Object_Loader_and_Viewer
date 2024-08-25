@@ -2,7 +2,7 @@
 #define RENDERER_H
 
 #include "Window.h"
-#include "Cube.h"
+#include "Model.h"
 #include "Camera.h"
 #include "shader.hpp"
 
@@ -12,9 +12,8 @@ public:
     ~Renderer();
 
     bool init();
-    void render(Cube& cube);
+    void render(Model& model);
     void cleanup();
-    void printMatrix(const glm::mat4& matrix);
     void setLightPosition(const glm::vec3& position);
     Window& getWindow();
 
