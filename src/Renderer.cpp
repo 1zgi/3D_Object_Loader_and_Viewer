@@ -28,7 +28,7 @@ bool Renderer::init() {
         return false;
     }
     // Set the background (clear) color here
-    glClearColor(0.2f, 0.3f, 0.3f, 1.0f); // Example: Dark teal color
+    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
