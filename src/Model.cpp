@@ -4,6 +4,7 @@
 Model::Model(const std::string& filepath) {
     loadModel(filepath);
     setupBuffers();
+    loadTextures(); // Load textures after setting up buffers
 
     // Initialize transformation attributes
     position = glm::vec3(0.0f);
@@ -25,13 +26,72 @@ Model::~Model() {
         glDeleteBuffers(1, &ebo);
     }
     glDeleteVertexArrays(1, &vao);
+
+    for (GLuint texture : textures) {
+        glDeleteTextures(1, &texture);
+    }
 }
+
+// Load textures using stb_image
+void Model::loadTextures() {
+    std::cout << "Starting to load textures..." << std::endl;
+
+    // Flip the image vertically on load
+    stbi_set_flip_vertically_on_load(true);
+
+    for (size_t i = 0; i < materials.size(); i++) {
+        const auto& material = materials[i];
+        if (!material.diffuse_texname.empty()) {
+            std::string texPath = material.diffuse_texname;
+            std::cout << "Loading texture from path: " << texPath << std::endl;
+
+            GLuint textureID;
+            glGenTextures(1, &textureID);
+            glBindTexture(GL_TEXTURE_2D, textureID);
+
+            int width, height, nrComponents;
+            unsigned char* data = stbi_load(texPath.c_str(), &width, &height, &nrComponents, 0);
+
+            if (data) {
+                GLenum format;
+                if (nrComponents == 1)
+                    format = GL_RED;
+                else if (nrComponents == 3)
+                    format = GL_RGB;
+                else if (nrComponents == 4)
+                    format = GL_RGBA;
+
+                glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+                glGenerateMipmap(GL_TEXTURE_2D);
+
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+                textures.push_back(textureID);
+                std::cout << "Texture loaded and assigned ID: " << textureID << std::endl;
+            }
+            else {
+                std::cerr << "Failed to load texture at path: " << texPath << std::endl;
+                glDeleteTextures(1, &textureID);
+                textures.push_back(0); // Add a placeholder texture ID
+            }
+            stbi_image_free(data);
+        }
+        else {
+            std::cout << "No diffuse texture for material: " << material.name << std::endl;
+            textures.push_back(0); // Add a placeholder texture ID
+        }
+    }
+    std::cout << "Finished loading textures." << std::endl;
+}
+
 
 // Load the model from the OBJ file using tinyobjloader
 void Model::loadModel(const std::string& filepath) {
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
-    std::vector<tinyobj::material_t> materials;
     std::string warn, err;
 
     std::string base_dir = filepath.substr(0, filepath.find_last_of('/'));
@@ -54,31 +114,45 @@ void Model::loadModel(const std::string& filepath) {
         return;
     }
 
-    // Process loaded data
-    for (const auto& shape : shapes) {
-        for (const auto& index : shape.mesh.indices) {
-            if (index.vertex_index >= 0 && index.vertex_index < attrib.vertices.size() / 3) {
-                vertices.push_back(attrib.vertices[3 * index.vertex_index + 0]);
-                vertices.push_back(attrib.vertices[3 * index.vertex_index + 1]);
-                vertices.push_back(attrib.vertices[3 * index.vertex_index + 2]);
-            }
-
-            if (index.normal_index >= 0 && index.normal_index < attrib.normals.size() / 3) {
-                normals.push_back(attrib.normals[3 * index.normal_index + 0]);
-                normals.push_back(attrib.normals[3 * index.normal_index + 1]);
-                normals.push_back(attrib.normals[3 * index.normal_index + 2]);
-            }
-
-            if (index.texcoord_index >= 0 && index.texcoord_index < attrib.texcoords.size() / 2) {
-                texcoords.push_back(attrib.texcoords[2 * index.texcoord_index + 0]);
-                texcoords.push_back(attrib.texcoords[2 * index.texcoord_index + 1]);
-            }
-
-            indices.push_back(static_cast<unsigned int>(indices.size()));
-        }
+    for (const auto& material : materials) {
+        std::cout << "Material name: " << material.name << std::endl;
+        std::cout << "Diffuse texture: " << material.diffuse_texname << std::endl;
     }
 
-    this->materials = materials; // Store the materials for later use
+    // Process loaded data and group by materials
+    for (const auto& shape : shapes) {
+        size_t index_offset = 0;
+        for (size_t f = 0; f < shape.mesh.num_face_vertices.size(); f++) {
+            int fv = shape.mesh.num_face_vertices[f];
+            int material_id = shape.mesh.material_ids[f];
+
+            face_material_ids.push_back(material_id);
+
+            for (size_t v = 0; v < fv; v++) {
+                tinyobj::index_t idx = shape.mesh.indices[index_offset + v];
+
+                if (idx.vertex_index >= 0 && idx.vertex_index < attrib.vertices.size() / 3) {
+                    vertices.push_back(attrib.vertices[3 * idx.vertex_index + 0]);
+                    vertices.push_back(attrib.vertices[3 * idx.vertex_index + 1]);
+                    vertices.push_back(attrib.vertices[3 * idx.vertex_index + 2]);
+                }
+
+                if (idx.normal_index >= 0 && idx.normal_index < attrib.normals.size() / 3) {
+                    normals.push_back(attrib.normals[3 * idx.normal_index + 0]);
+                    normals.push_back(attrib.normals[3 * idx.normal_index + 1]);
+                    normals.push_back(attrib.normals[3 * idx.normal_index + 2]);
+                }
+
+                if (idx.texcoord_index >= 0 && idx.texcoord_index < attrib.texcoords.size() / 2) {
+                    texcoords.push_back(attrib.texcoords[2 * idx.texcoord_index + 0]);
+                    texcoords.push_back(attrib.texcoords[2 * idx.texcoord_index + 1]);
+                }
+
+                indices.push_back(static_cast<unsigned int>(indices.size()));
+            }
+            index_offset += fv;
+        }
+    }
 
     std::cout << "Model loaded successfully." << std::endl;
     std::cout << "Number of vertices: " << vertices.size() / 3 << std::endl;
@@ -92,34 +166,40 @@ void Model::setupBuffers() {
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
 
+    // Generate and bind VBO for vertex positions
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), &vertices[0], GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0); // Bind to location 0
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-    glEnableVertexAttribArray(0);
 
+    // Generate and bind NBO for normals, if they exist
     if (!normals.empty()) {
         glGenBuffers(1, &nbo);
         glBindBuffer(GL_ARRAY_BUFFER, nbo);
         glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(float), &normals[0], GL_STATIC_DRAW);
+        glEnableVertexAttribArray(1); // Bind to location 1
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-        glEnableVertexAttribArray(1);
     }
 
+    // Generate and bind TBO for texture coordinates, if they exist
     if (!texcoords.empty()) {
         glGenBuffers(1, &tbo);
         glBindBuffer(GL_ARRAY_BUFFER, tbo);
         glBufferData(GL_ARRAY_BUFFER, texcoords.size() * sizeof(float), &texcoords[0], GL_STATIC_DRAW);
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
-        glEnableVertexAttribArray(2);
+        glEnableVertexAttribArray(2); // Bind to location 2
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, nullptr);  // Ensure 2 components (u, v)
     }
 
+    // Generate and bind EBO for indices
     glGenBuffers(1, &ebo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
 
-    glBindVertexArray(0);
+    glBindVertexArray(0); // Unbind the VAO
 }
+
+
 
 glm::mat4 Model::calculateModelMatrix() const {
     glm::mat4 translation = glm::translate(glm::mat4(1.0f), position);
@@ -134,7 +214,23 @@ glm::mat4 Model::getModelMatrix() const {
 
 void Model::draw() const {
     glBindVertexArray(vao);
-    glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_INT, 0);
+
+    size_t indexOffset = 0;
+    for (size_t i = 0; i < face_material_ids.size(); i++) {
+        int material_id = face_material_ids[i];
+
+        if (material_id >= 0 && material_id < textures.size() && textures[material_id] != 0) {
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, textures[material_id]);
+        }
+        else {
+            glBindTexture(GL_TEXTURE_2D, 0); // Unbind texture if there is none
+        }
+
+        glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, (void*)(indexOffset * sizeof(unsigned int)));
+        indexOffset += 3;
+    }
+
     glBindVertexArray(0);
 }
 

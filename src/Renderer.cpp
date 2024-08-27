@@ -27,6 +27,8 @@ bool Renderer::init() {
         fprintf(stderr, "Failed to initialize GLEW\n");
         return false;
     }
+    // Set the background (clear) color here
+    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
@@ -59,6 +61,7 @@ bool Renderer::init() {
 }
 
 void Renderer::render(Model& model) {
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     int width, height;

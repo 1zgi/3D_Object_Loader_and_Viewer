@@ -7,8 +7,10 @@
 #include <iostream>
 #include <GL/glew.h>
 #include <glm/glm.hpp>
-#include <glm/ext/matrix_transform.hpp> // Include for transformations
+#include <glm/ext/matrix_transform.hpp>
+#include "stb_image.h"
 #include "tiny_obj_loader.h"
+#include "shader.hpp"
 
 class Model {
 public:
@@ -37,18 +39,19 @@ private:
     // Loads the model from an OBJ file
     void loadModel(const std::string& filepath);
 
-    // Sets up OpenGL buffers (VAO, VBO, NBO, TBO)
+    // Loads textures associated with the model
+    void loadTextures();
+
+    // Sets up OpenGL buffers (VAO, VBO, NBO, TBO, EBO)
     void setupBuffers();
 
     // Calculates the model transformation matrix based on the position, rotation, and scale
     glm::mat4 calculateModelMatrix() const;
 
-    // The model's vertices, normals, and texture coordinates
+    // The model's vertices, normals, texture coordinates, and indices
     std::vector<float> vertices;
     std::vector<float> normals;
     std::vector<float> texcoords;
-
-    // Indices for drawing triangles
     std::vector<unsigned int> indices;
 
     // Material information
@@ -61,6 +64,9 @@ private:
     GLuint nbo;
     GLuint tbo;
     GLuint ebo;
+
+    // OpenGL handles for textures
+    std::vector<GLuint> textures;
 
     // Model transformation attributes
     glm::vec3 position;
