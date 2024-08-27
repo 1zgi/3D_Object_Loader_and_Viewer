@@ -5,14 +5,17 @@ in vec3 Position_worldspace;
 in vec3 Normal_cameraspace;
 in vec3 EyeDirection_cameraspace;
 in vec3 LightDirection_cameraspace;
+in vec2 UV;
 
 uniform vec3 AmbientLightIntensity;
+uniform vec3 LightIntensity;
+uniform sampler2D texture_diffuse1;
 
 out vec4 color;
 
 void main() {
     // Material properties
-    vec3 MaterialDiffuseColor = fragmentColor; // Color passed from the vertex shader
+    vec3 MaterialDiffuseColor = texture(texture_diffuse1, UV).rgb; // Use texture color
     vec3 MaterialAmbientColor = AmbientLightIntensity * MaterialDiffuseColor; // Ambient light contribution
     vec3 MaterialSpecularColor = vec3(0.3, 0.3, 0.3); // Specular highlight color
 
@@ -30,7 +33,7 @@ void main() {
 
     // Calculate the final color with ambient, diffuse, and specular contributions
     vec3 finalColor = MaterialAmbientColor + 
-                      MaterialDiffuseColor * cosTheta + 
+                      MaterialDiffuseColor * LightIntensity * cosTheta + 
                       MaterialSpecularColor * pow(cosAlpha, 32.0); // Specular exponent is 32.0 for a sharper highlight
 
     // Output the final color

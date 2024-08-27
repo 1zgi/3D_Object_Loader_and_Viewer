@@ -22,7 +22,7 @@ int main(int argc, char* args[]) {
         return -1;
     }
 
-    Model model("models/obj/KrakenChest2_obj.obj");
+    Model model("models/obj/monster.obj");
 
     bool running = true;
     bool mouseCapturedByImGui = false;
@@ -63,7 +63,7 @@ int main(int argc, char* args[]) {
         camera.handleKeyboardInput(state, deltaTime);
        
         renderer.render(model);
-     
+        
         imguiApp.Run(&renderer, &model);
         
     }
