@@ -141,3 +141,8 @@ void Renderer::setLightPosition(const glm::vec3& position) {
 Window& Renderer::getWindow() {
     return window;
 }
+
+Camera& Renderer::getCamera() {
+    return camera;
+}
+

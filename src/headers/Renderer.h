@@ -17,6 +17,7 @@ public:
     void render(Model& model);
     void cleanup();
     void setLightPosition(const glm::vec3& position);
+    Camera& getCamera(); // Added this method
     Window& getWindow();
 
     glm::vec3 dirLightDirection = glm::vec3(-1.0f, -1.0f, -1.0f);
@@ -47,9 +48,7 @@ private:
     bool positionPrinted;
 
     // Directional light control variables
-    
     glm::vec3 dirLightColor;
-
     glm::vec3 pointLightPosition;
     glm::vec3 pointLightColor;
     float pointLightIntensity;
