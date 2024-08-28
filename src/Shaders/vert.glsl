@@ -4,17 +4,14 @@ layout(location = 0) in vec3 vertexPosition_modelspace;
 layout(location = 1) in vec3 vertexNormal_modelspace;
 layout(location = 2) in vec2 vertexUV;
 
-out vec3 fragmentColor;
 out vec3 Position_worldspace;
 out vec3 Normal_cameraspace;
 out vec3 EyeDirection_cameraspace;
-out vec3 LightDirection_cameraspace;
 out vec2 UV;
 
 uniform mat4 MVP; // Model-View-Projection matrix
 uniform mat4 V;   // View matrix
 uniform mat4 M;   // Model matrix
-uniform vec3 LightPosition_worldspace; // Light position in world space
 
 void main() {
     // Transform the vertex position into clip space
@@ -29,15 +26,9 @@ void main() {
     // Calculate the direction from the vertex to the camera in camera space
     EyeDirection_cameraspace = -vertexPosition_cameraspace;
 
-    // Calculate the direction from the vertex to the light in camera space
-    LightDirection_cameraspace = vec3(V * vec4(LightPosition_worldspace, 1.0)) - vertexPosition_cameraspace;
-
     // Transform the normal vector into camera space
     Normal_cameraspace = normalize(mat3(V * M) * vertexNormal_modelspace);
 
     // Pass UV to the fragment shader
     UV = vertexUV;
-
-    // Set a default color (for example, white) to pass to the fragment shader
-    fragmentColor = vec3(1.0, 1.0, 1.0);
 }

@@ -32,9 +32,25 @@ Model::~Model() {
     }
 }
 
+// Method to get the diffuse texture ID
+GLuint Model::getTextureID(size_t materialIndex) const {
+    if (materialIndex < textures.size()) {
+        return textures[materialIndex];
+    }
+    return 0; // Return 0 if the index is out of bounds or no texture is assigned
+}
+
+// Method to get the specular texture ID
+GLuint Model::getSpecularTextureID(size_t materialIndex) const {
+    if (materialIndex < specularTextures.size()) {
+        return specularTextures[materialIndex];
+    }
+    return 0; // Return 0 if the index is out of bounds or no texture is assigned
+}
+
 // Load textures using stb_image
 void Model::loadTextures() {
-    std::cout << "Starting to load textures..." << std::endl;
+    std::cout << "\nStarting to load textures..." << std::endl;
 
     // Flip the image vertically on load
     stbi_set_flip_vertically_on_load(true);
@@ -84,7 +100,7 @@ void Model::loadTextures() {
             textures.push_back(0); // Add a placeholder texture ID
         }
     }
-    std::cout << "Finished loading textures." << std::endl;
+    std::cout << "Finished loading textures.\n" << std::endl;
 }
 
 
@@ -115,7 +131,7 @@ void Model::loadModel(const std::string& filepath) {
     }
 
     for (const auto& material : materials) {
-        std::cout << "Material name: " << material.name << std::endl;
+        std::cout << "\nMaterial name: " << material.name << std::endl;
         std::cout << "Diffuse texture: " << material.diffuse_texname << std::endl;
     }
 
@@ -154,11 +170,11 @@ void Model::loadModel(const std::string& filepath) {
         }
     }
 
-    std::cout << "Model loaded successfully." << std::endl;
+    std::cout << "\nModel loaded successfully." << std::endl;
     std::cout << "Number of vertices: " << vertices.size() / 3 << std::endl;
     std::cout << "Number of normals: " << normals.size() / 3 << std::endl;
     std::cout << "Number of texture coordinates: " << texcoords.size() / 2 << std::endl;
-    std::cout << "Number of triangles: " << indices.size() / 3 << std::endl;
+    std::cout << "Number of triangles: " << indices.size() / 3<<"\n" << std::endl;
 }
 
 // Setup OpenGL buffers

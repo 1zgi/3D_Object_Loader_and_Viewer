@@ -56,37 +56,65 @@ bool Renderer::init() {
     glUseProgram(programID);
     glUniform3f(LightID, lightPos.x, lightPos.y, lightPos.z);
     glUniform3f(AmbientLightID, ambientLightIntensity.x, ambientLightIntensity.y, ambientLightIntensity.z);
-
+    
     return true;
 }
 
 void Renderer::render(Model& model) {
-
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     int width, height;
     SDL_GetWindowSize(window.getWindow(), &width, &height);
     glViewport(0, 0, width, height);
 
-    // Rotate the model around its origin
     static float rotation = 0.0f;
-    rotation += 10.0f * 0.016f;  // Decrease the rotation speed to 10 degrees per second
+    rotation += 10.0f * 0.016f;
     model.setRotation(rotation, glm::vec3(0.0f, 1.0f, 0.0f));
 
     glm::mat4 Model = model.getModelMatrix();
     glm::mat4 View = camera.getViewMatrix();
     glm::mat4 MVP = Projection * View * Model;
 
-    glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
-    glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &View[0][0]);
-    glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &Model[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(programID, "MVP"), 1, GL_FALSE, &MVP[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(programID, "ModelMatrix"), 1, GL_FALSE, &Model[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(programID, "ViewMatrix"), 1, GL_FALSE, &View[0][0]);
 
+    // Set the directional light properties
+    glUniform3f(glGetUniformLocation(programID, "dirLight.Intensity"), 1.0f, 1.0f, 1.0f);
+    glUniform3f(glGetUniformLocation(programID, "dirLight.Direction"), -1.0f, -1.0f, -1.0f);
+
+    // Set the point light properties
+    glm::vec3 pointLightPosition(5.0f, 5.0f, 5.0f); // Example position of the point light
+    glUniform3f(glGetUniformLocation(programID, "pointLight.Intensity"), 1.0f, 1.0f, 1.0f);
+    glUniform3f(glGetUniformLocation(programID, "pointLight.Position"), pointLightPosition.x, pointLightPosition.y, pointLightPosition.z);
+
+    // Set the material properties
+    glUniform3f(glGetUniformLocation(programID, "material.SpecularColor"), 1.0f, 1.0f, 1.0f);
+    glUniform1i(glGetUniformLocation(programID, "material.diffuseTexture"), 0);
+    glUniform1i(glGetUniformLocation(programID, "material.specularTexture"), 1);
+
+    glUniform1f(glGetUniformLocation(programID, "pointLight.Constant"), 1.0f);
+    glUniform1f(glGetUniformLocation(programID, "pointLight.Linear"), 0.09f);
+    glUniform1f(glGetUniformLocation(programID, "pointLight.Quadratic"), 0.032f); 
+
+    // Set the camera position
+    glm::vec3 cameraPos = camera.getPosition();
+    glUniform3f(glGetUniformLocation(programID, "gCameraLocalPos"), cameraPos.x, cameraPos.y, cameraPos.z);
+
+    // Bind the textures
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, model.getTextureID(0));  // Diffuse texture
+
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, model.getSpecularTextureID(0));  // Specular texture
+
+    // Print model position in world space once
     if (!positionPrinted) {
         glm::vec4 modelPosition_worldspace = Model * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-        std::cout << "Model Position in World Space: ("
+        std::cout << "\nModel Position in World Space: ("
             << modelPosition_worldspace.x << ", "
             << modelPosition_worldspace.y << ", "
-            << modelPosition_worldspace.z << ")" << std::endl;
+            << modelPosition_worldspace.z << ")\n" << std::endl;
         positionPrinted = true;
     }
 
@@ -107,7 +135,6 @@ void Renderer::cleanup() {
 
 void Renderer::setLightPosition(const glm::vec3& position) {
     lightPos = position;
-    glUseProgram(programID);
     glUniform3f(LightID, lightPos.x, lightPos.y, lightPos.z);
 }
 

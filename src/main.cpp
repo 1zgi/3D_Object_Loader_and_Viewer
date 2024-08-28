@@ -22,7 +22,7 @@ int main(int argc, char* args[]) {
         return -1;
     }
 
-    Model model("models/obj/monster.obj");
+    Model model("models/obj/KrakenChest2_obj.obj");
 
     bool running = true;
     bool mouseCapturedByImGui = false;
@@ -34,8 +34,6 @@ int main(int argc, char* args[]) {
         std::cerr << "Failed to initialize ImGui!" << std::endl;
         return -1;
     }
-
-    glm::vec3 lightPos(4.0f, 4.0f, 4.0f);
 
     Uint32 lastTime = SDL_GetTicks();
     while (running) {

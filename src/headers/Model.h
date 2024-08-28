@@ -35,6 +35,9 @@ public:
     // Sets the model's scale
     void setScale(const glm::vec3& scale);
 
+    GLuint getTextureID(size_t materialIndex) const;
+    GLuint getSpecularTextureID(size_t materialIndex) const;
+
 private:
     // Loads the model from an OBJ file
     void loadModel(const std::string& filepath);
@@ -67,6 +70,7 @@ private:
 
     // OpenGL handles for textures
     std::vector<GLuint> textures;
+    std::vector<GLuint> specularTextures;
 
     // Model transformation attributes
     glm::vec3 position;

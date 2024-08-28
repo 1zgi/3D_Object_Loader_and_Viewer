@@ -5,6 +5,8 @@
 #include "Model.h"
 #include "Camera.h"
 #include "shader.hpp"
+#include <glm/glm.hpp>
+#include <imgui.h>
 
 class Renderer {
 public:
@@ -17,7 +19,13 @@ public:
     void setLightPosition(const glm::vec3& position);
     Window& getWindow();
 
+    glm::vec3 dirLightDirection = glm::vec3(-1.0f, -1.0f, -1.0f);
+    glm::vec3 dirLightIntensity = glm::vec3(1.0f, 1.0f, 1.0f);
+
 private:
+    // ImGui rendering method
+    void renderImGui();
+
     Window& window;
     Camera& camera;
 
@@ -27,7 +35,7 @@ private:
     GLuint ModelMatrixID;
     GLuint LightID;
     GLuint AmbientLightID;
-    
+
     glm::mat4 Projection;
     glm::vec3 lightPos;
     glm::vec3 lightIntensity;
@@ -36,9 +44,15 @@ private:
     GLuint vao;
     GLuint vbo;
 
-   
-
     bool positionPrinted;
+
+    // Directional light control variables
+    
+    glm::vec3 dirLightColor;
+
+    glm::vec3 pointLightPosition;
+    glm::vec3 pointLightColor;
+    float pointLightIntensity;
 };
 
-#endif
+#endif // RENDERER_H

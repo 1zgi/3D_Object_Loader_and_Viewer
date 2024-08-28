@@ -53,6 +53,11 @@ void ImGuiApp::Run(Renderer* renderer, Model* model) {
         ImGui::SliderFloat3("Light Position", &lightPosition[0], -10.0f, 10.0f);
         ImGui::End();
 
+        ImGui::Begin("Directional Light Control");
+        ImGui::SliderFloat3("Direction", &renderer->dirLightDirection.x, -1.0f, 1.0f);
+        ImGui::ColorEdit3("Intensity", &renderer->dirLightIntensity.x);
+        ImGui::End();
+
         // Update the light position in the renderer
         renderer->setLightPosition(lightPosition);
 

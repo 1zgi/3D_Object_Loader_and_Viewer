@@ -12,6 +12,8 @@ public:
     glm::mat4 getViewMatrix() const;
     void handleKeyboardInput(const Uint8* state, float deltaTime);
     void handleMouseMotion(int xrel, int yrel);
+    
+    glm::vec3 getPosition() const;
 
 private:
     void updateCameraVectors();
