@@ -32,26 +32,7 @@ bool ImGuiApp::Init(Window* window) {
 }
 
 void ImGuiApp::Run(Renderer* renderer, Model* model) {
-    
-        // Poll and handle events
-        SDL_Event event;
-        while (SDL_PollEvent(&event)) {
-            ImGui_ImplSDL2_ProcessEvent(&event);
-            
-            // Allow SDL to process quit events properly
-            if (event.type == SDL_QUIT) {
-                done = true;
-            }
-            if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(renderer->getWindow().getWindow())) {
-                done = true;
-            }
-
-            // Handle keyboard input for camera movement
-            if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) {
-                renderer->getCamera().handleKeyboardInput(SDL_GetKeyboardState(nullptr), 0.016f); // Pass the deltaTime here if you have it
-            }
-        }
-
+   
         // Start the ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplSDL2_NewFrame();
