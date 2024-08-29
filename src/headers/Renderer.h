@@ -17,15 +17,13 @@ public:
     void render(Model& model);
     void cleanup();
     void setLightPosition(const glm::vec3& position);
-    Camera& getCamera(); // Added this method
+    Camera& getCamera();
     Window& getWindow();
 
     glm::vec3 dirLightDirection = glm::vec3(-1.0f, -1.0f, -1.0f);
     glm::vec3 dirLightIntensity = glm::vec3(1.0f, 1.0f, 1.0f);
 
 private:
-    // ImGui rendering method
-    void renderImGui();
 
     Window& window;
     Camera& camera;
