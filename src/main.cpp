@@ -44,13 +44,19 @@ int main(int argc, char* args[]) {
         while (SDL_PollEvent(&event)) {
             
             if (event.type == SDL_QUIT) {
+                std::cout << "SDL_QUIT received" << std::endl;
+                running = false;
+            }
+
+            if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE) {
+                std::cout << "SDL_WINDOWEVENT_CLOSE received" << std::endl;
                 running = false;
             }
 
             // Check if ImGui is capturing the mouse
             ImGuiIO& io = ImGui::GetIO();
             mouseCapturedByImGui = io.WantCaptureMouse;
-
+            
             if (!mouseCapturedByImGui && event.type == SDL_MOUSEMOTION) {
                 camera.handleMouseMotion(event.motion.xrel, event.motion.yrel);
             }
@@ -63,7 +69,6 @@ int main(int argc, char* args[]) {
         renderer.render(model);
         
         imguiApp.Run(&renderer, &model);
-        
     }
 
     imguiApp.Cleanup();
