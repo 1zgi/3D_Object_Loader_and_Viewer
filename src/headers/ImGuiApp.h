@@ -22,7 +22,7 @@ public:
 private:
     bool done = false;
     glm::vec3 lightPosition = glm::vec3(4.0f, 4.0f, 4.0f);
-    Window* window; // Add this member variable
+    Window* window; //member variable
 };
 
 #endif // IMGUI_APP_H

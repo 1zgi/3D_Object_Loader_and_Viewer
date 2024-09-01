@@ -11,6 +11,7 @@ public:
     bool init();
     SDL_Window* getWindow();
     SDL_GLContext getContext();
+
 private:
     int width;
     int height;

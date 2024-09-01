@@ -32,45 +32,43 @@ bool ImGuiApp::Init(Window* window) {
 }
 
 void ImGuiApp::Run(Renderer* renderer, Model* model) {
+   
+    // Start the ImGui frame
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplSDL2_NewFrame();
+    ImGui::NewFrame();
 
-        // Poll and handle events
-        SDL_Event event;
-        while (SDL_PollEvent(&event)) {
-            ImGui_ImplSDL2_ProcessEvent(&event);
-            if (event.type == SDL_QUIT)
-                done = true;
-            if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(renderer->getWindow().getWindow()))
-                done = true;
-        }
+    glm::vec3 currentAmbientIntensity = renderer->getAmbientLightIntensity();
 
-        // Start the ImGui frame
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplSDL2_NewFrame();
-        ImGui::NewFrame();
+    // Calculate the scalar intensity as the average of the components(or use length for different logic)
+    float ambientIntensity = (currentAmbientIntensity.x + currentAmbientIntensity.y + currentAmbientIntensity.z) / 3.0f;
 
-        // ImGui code goes here
-        ImGui::Begin("Light Control");
-        ImGui::SliderFloat3("Light Position", &lightPosition[0], -10.0f, 10.0f);
-        ImGui::End();
+    // Add controls for ambient light intensity
+    ImGui::Begin("Ambient Light Control");
+    if (ImGui::SliderFloat("Ambient Intensity", &ambientIntensity, 0.2f, 1.0f)) {
+      // Update ambientLightIntensity uniformly with the new value
+      renderer->setAmbientLightIntensity(glm::vec3(ambientIntensity));
+    }
+    ImGui::End();
 
-        // Update the light position in the renderer
-        renderer->setLightPosition(lightPosition);
+   // Update the light position in the renderer
+   renderer->setLightPosition(lightPosition);
 
-        // Render your scene
-        renderer->render(*model);
+   // Render your scene
+   renderer->render(*model);
 
-        // Rendering ImGui
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+   // Rendering ImGui
+   ImGui::Render();
+   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-        // Swap buffers
-        SDL_GL_SwapWindow(renderer->getWindow().getWindow());
+   // Swap buffers
+   SDL_GL_SwapWindow(renderer->getWindow().getWindow());
 
-        // Check for OpenGL errors
-        GLenum err;
-        while ((err = glGetError()) != GL_NO_ERROR) {
-            std::cerr << "OpenGL error: " << err << std::endl;
-        }
+   // Check for OpenGL errors
+   GLenum err;
+   while ((err = glGetError()) != GL_NO_ERROR) {
+      std::cerr << "OpenGL error: " << err << std::endl;
+   } 
 }
 
 void ImGuiApp::Cleanup() {

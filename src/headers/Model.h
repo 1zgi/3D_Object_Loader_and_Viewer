@@ -35,6 +35,9 @@ public:
     // Sets the model's scale
     void setScale(const glm::vec3& scale);
 
+    GLuint getTextureID(size_t materialIndex) const;
+    GLuint getSpecularTextureID(size_t materialIndex) const;
+
 private:
     // Loads the model from an OBJ file
     void loadModel(const std::string& filepath);
@@ -47,6 +50,9 @@ private:
 
     // Calculates the model transformation matrix based on the position, rotation, and scale
     glm::mat4 calculateModelMatrix() const;
+
+    // Calculates the bounding box of the model
+    void calculateBoundingBox(glm::vec3& min, glm::vec3& max) const;
 
     // The model's vertices, normals, texture coordinates, and indices
     std::vector<float> vertices;
@@ -67,6 +73,7 @@ private:
 
     // OpenGL handles for textures
     std::vector<GLuint> textures;
+    std::vector<GLuint> specularTextures;
 
     // Model transformation attributes
     glm::vec3 position;
