@@ -38,14 +38,17 @@ void ImGuiApp::Run(Renderer* renderer, Model* model) {
         ImGui_ImplSDL2_NewFrame();
         ImGui::NewFrame();
 
-        // ImGui code for controlling lights
-        ImGui::Begin("Light Control");
-        ImGui::SliderFloat3("Light Position", &lightPosition[0], -10.0f, 10.0f);
-        ImGui::End();
+        glm::vec3 currentAmbientIntensity = renderer->getAmbientLightIntensity();
 
-        ImGui::Begin("Directional Light Control");
-        ImGui::SliderFloat3("Direction", &renderer->dirLightDirection.x, -1.0f, 1.0f);
-        ImGui::ColorEdit3("Intensity", &renderer->dirLightIntensity.x);
+        // Calculate the scalar intensity as the average of the components(or use length for different logic)
+        float ambientIntensity = (currentAmbientIntensity.x + currentAmbientIntensity.y + currentAmbientIntensity.z) / 3.0f;
+
+        // Add controls for ambient light intensity
+        ImGui::Begin("Ambient Light Control");
+        if (ImGui::SliderFloat("Ambient Intensity", &ambientIntensity, 0.2f, 1.0f)) {
+            // Update ambientLightIntensity uniformly with the new value
+            renderer->setAmbientLightIntensity(glm::vec3(ambientIntensity));
+        }
         ImGui::End();
 
         // Update the light position in the renderer

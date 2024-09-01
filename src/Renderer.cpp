@@ -10,6 +10,9 @@ Renderer::Renderer(Window& window, Camera& camera)
     LightID(0),
     AmbientLightID(0),
     Projection(glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f)),
+    dirLightDirection(-1.0f, -1.0f, -1.0f),
+    dirLightIntensity (1.0f, 1.0f, 1.0f),
+    dirLightColor(0),
     lightPos(4.0f, 4.0f, 4.0f),
     lightIntensity(1.0f, 1.0f, 1.0f),
     ambientLightIntensity(0.2f, 0.2f, 0.2f),
@@ -136,6 +139,15 @@ void Renderer::cleanup() {
 void Renderer::setLightPosition(const glm::vec3& position) {
     lightPos = position;
     glUniform3f(LightID, lightPos.x, lightPos.y, lightPos.z);
+}
+
+void Renderer::setAmbientLightIntensity(const glm::vec3& intensity){
+    ambientLightIntensity = intensity;
+    glUniform3f(AmbientLightID, ambientLightIntensity.x, ambientLightIntensity.y, ambientLightIntensity.z);
+}
+
+glm::vec3 Renderer::getAmbientLightIntensity() const {
+    return ambientLightIntensity;
 }
 
 Window& Renderer::getWindow() {

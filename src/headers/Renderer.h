@@ -16,12 +16,17 @@ public:
     bool init();
     void render(Model& model);
     void cleanup();
-    void setLightPosition(const glm::vec3& position);
+    
+
+    //get methods
+    glm::vec3 getAmbientLightIntensity() const;
     Camera& getCamera();
     Window& getWindow();
 
-    glm::vec3 dirLightDirection = glm::vec3(-1.0f, -1.0f, -1.0f);
-    glm::vec3 dirLightIntensity = glm::vec3(1.0f, 1.0f, 1.0f);
+    //set methods
+    void setAmbientLightIntensity(const glm::vec3& intensity);
+    void setLightPosition(const glm::vec3& position);
+    
 
 private:
 
@@ -39,7 +44,7 @@ private:
     glm::vec3 lightPos;
     glm::vec3 lightIntensity;
     glm::vec3 ambientLightIntensity;
-
+    
     GLuint vao;
     GLuint vbo;
 
@@ -47,9 +52,9 @@ private:
 
     // Directional light control variables
     glm::vec3 dirLightColor;
-    glm::vec3 pointLightPosition;
-    glm::vec3 pointLightColor;
-    float pointLightIntensity;
+    glm::vec3 dirLightDirection;
+    glm::vec3 dirLightIntensity;
+
 };
 
 #endif // RENDERER_H
