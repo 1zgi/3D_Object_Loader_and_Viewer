@@ -6,11 +6,20 @@ Model::Model(const std::string& filepath) {
     setupBuffers();
     loadTextures(); // Load textures after setting up buffers
 
+    // Calculate the bounding box
+    glm::vec3 min, max;
+    calculateBoundingBox(min, max);
+
+    // Calculate the scale factor to fit the model within a 1.0 unit box
+    glm::vec3 size = max - min;
+    float maxDimension = glm::max(glm::max(size.x, size.y), size.z);
+    float scaleFactor = 1.0f / maxDimension;
+
     // Initialize transformation attributes
     position = glm::vec3(0.0f);
     rotationAxis = glm::vec3(0.0f, 1.0f, 0.0f);
     rotationAngle = 0.0f;
-    scale = glm::vec3(1.0f);
+    scale = glm::vec3(scaleFactor);
 }
 
 // Destructor to clean up OpenGL buffers
@@ -215,8 +224,6 @@ void Model::setupBuffers() {
     glBindVertexArray(0); // Unbind the VAO
 }
 
-
-
 glm::mat4 Model::calculateModelMatrix() const {
     glm::mat4 translation = glm::translate(glm::mat4(1.0f), position);
     glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), glm::radians(rotationAngle), rotationAxis);
@@ -226,6 +233,19 @@ glm::mat4 Model::calculateModelMatrix() const {
 
 glm::mat4 Model::getModelMatrix() const {
     return calculateModelMatrix();
+}
+
+void Model::calculateBoundingBox(glm::vec3& min, glm::vec3& max) const {
+    if (vertices.empty()) return;
+
+    min = glm::vec3(vertices[0], vertices[1], vertices[2]);
+    max = glm::vec3(vertices[0], vertices[1], vertices[2]);
+
+    for (size_t i = 1; i < vertices.size() / 3; i++) {
+        glm::vec3 vertex(vertices[3 * i], vertices[3 * i + 1], vertices[3 * i + 2]);
+        min = glm::min(min, vertex);
+        max = glm::max(max, vertex);
+    }
 }
 
 void Model::draw() const {

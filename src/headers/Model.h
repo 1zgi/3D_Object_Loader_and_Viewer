@@ -51,6 +51,9 @@ private:
     // Calculates the model transformation matrix based on the position, rotation, and scale
     glm::mat4 calculateModelMatrix() const;
 
+    // Calculates the bounding box of the model
+    void calculateBoundingBox(glm::vec3& min, glm::vec3& max) const;
+
     // The model's vertices, normals, texture coordinates, and indices
     std::vector<float> vertices;
     std::vector<float> normals;
