@@ -1,7 +1,7 @@
 #include "headers/Camera.h"
 
 Camera::Camera(glm::vec3 position, glm::vec3 target, glm::vec3 up)
-    : position(position), worldUp(up), yaw(-38.0f), pitch(-30.0f) {
+    : position(position), worldUp(up), yaw(-25.0f), pitch(-25.0f) {
     front = glm::normalize(target - position);
     updateCameraVectors();
 }
