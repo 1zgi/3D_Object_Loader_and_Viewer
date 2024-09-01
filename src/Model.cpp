@@ -4,7 +4,7 @@
 Model::Model(const std::string& filepath) {
     loadModel(filepath);
     setupBuffers();
-    loadTextures(); // Load textures after setting up buffers
+    loadTextures();
 
     // Calculate the bounding box
     glm::vec3 min, max;
