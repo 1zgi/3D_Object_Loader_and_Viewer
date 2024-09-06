@@ -22,7 +22,7 @@ int main(int argc, char* args[]) {
         return -1;
     }
 
-    Model model("models/obj/monster.obj");
+    Model model("models/obj/Earth.obj");
 
     bool running = true;
     bool mouseCapturedByImGui = false;
@@ -79,7 +79,7 @@ int main(int argc, char* args[]) {
                 break;
 
             case SDL_MOUSEWHEEL:
-                 camera.handleMouseScroll(event.wheel.y);  // y is positive for zoom in, negative for zoom out
+                 camera.handleMouseScroll(static_cast<float>(event.wheel.y));  // y is positive for zoom in, negative for zoom out
                 break; 
             }
 
