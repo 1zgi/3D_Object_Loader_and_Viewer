@@ -23,7 +23,7 @@ bool ImGuiApp::Init(Window* window) {
         std::cerr << "Failed to initialize ImGui SDL2 backend!" << std::endl;
         return false;
     }
-    if (!ImGui_ImplOpenGL3_Init("#version 330")) {
+    if (!ImGui_ImplOpenGL3_Init("#version 410")) {
         std::cerr << "Failed to initialize ImGui OpenGL3 backend!" << std::endl;
         return false;
     }
