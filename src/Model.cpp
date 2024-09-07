@@ -301,6 +301,10 @@ GLuint Model::getSpecularTextureID(size_t materialIndex) const {
     return 0; // Return 0 if the index is out of bounds or no texture is assigned
 }
 
+glm::vec3 Model::getPosition() const {
+    return position;
+}
+
 void Model::setPosition(const glm::vec3& pos) {
     position = pos;
 }

@@ -39,6 +39,8 @@ public:
 
     GLuint getSpecularTextureID(size_t materialIndex) const;
 
+    glm::vec3 getPosition() const;
+
     // Gets the diffuse color from the material if no texture is available
     glm::vec3 getMaterialDiffuseColor(size_t materialIndex) const;
 
