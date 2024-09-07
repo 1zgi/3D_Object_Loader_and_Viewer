@@ -93,7 +93,6 @@ void Renderer::render(Model& model) {
 
     // Set the material properties
     glUniform3f(glGetUniformLocation(programID, "material.SpecularColor"), 1.0f, 1.0f, 1.0f);
-    glUniform1i(glGetUniformLocation(programID, "material.diffuseTexture"), 0);
     glUniform1i(glGetUniformLocation(programID, "material.specularTexture"), 1);
 
     glUniform1f(glGetUniformLocation(programID, "pointLight.Constant"), 1.0f);
@@ -104,9 +103,22 @@ void Renderer::render(Model& model) {
     glm::vec3 cameraPos = camera.getPosition();
     glUniform3f(glGetUniformLocation(programID, "gCameraLocalPos"), cameraPos.x, cameraPos.y, cameraPos.z);
 
-    // Bind the textures
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, model.getTextureID(0));  // Diffuse texture
+    
+    size_t materialIndex = 0;
+    // Set the diffuse color from the material (loaded from the MTL file)
+    glm::vec3 materialDiffuseColor = model.getMaterialDiffuseColor(materialIndex);  // This should return the diffuse color from the material
+    glUniform3fv(glGetUniformLocation(programID, "material.DiffuseColor"), 1, &materialDiffuseColor[0]);
+
+    // Check if the texture exists and set the useTexture uniform
+    bool textureAvailable = (model.getTextureID(0) != 0);
+    glUniform1i(glGetUniformLocation(programID, "useTexture"), textureAvailable);
+
+    // Bind the diffuse texture if it exists
+    if (textureAvailable) {
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, model.getTextureID(0));
+        glUniform1i(glGetUniformLocation(programID, "material.diffuseTexture"), 0);  // Set the texture unit
+    }
 
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, model.getSpecularTextureID(0));  // Specular texture
@@ -121,7 +133,7 @@ void Renderer::render(Model& model) {
         positionPrinted = true;
     }
 
-    model.draw();
+    model.draw(programID);
 
     GLenum err;
     while ((err = glGetError()) != GL_NO_ERROR) {
