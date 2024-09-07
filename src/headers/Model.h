@@ -21,7 +21,7 @@ public:
     ~Model();
 
     // Renders the model
-    void draw() const;
+    void draw(GLuint programID) const;
 
     // Returns the model's transformation matrix
     glm::mat4 getModelMatrix() const;
@@ -36,7 +36,11 @@ public:
     void setScale(const glm::vec3& scale);
 
     GLuint getTextureID(size_t materialIndex) const;
+
     GLuint getSpecularTextureID(size_t materialIndex) const;
+
+    // Gets the diffuse color from the material if no texture is available
+    glm::vec3 getMaterialDiffuseColor(size_t materialIndex) const;
 
 private:
     // Loads the model from an OBJ file
@@ -74,6 +78,9 @@ private:
     // OpenGL handles for textures
     std::vector<GLuint> textures;
     std::vector<GLuint> specularTextures;
+
+    // Material diffuse colors for each material
+    std::vector<glm::vec3> diffuseColors;  // Store diffuse color for each material
 
     // Model transformation attributes
     glm::vec3 position;

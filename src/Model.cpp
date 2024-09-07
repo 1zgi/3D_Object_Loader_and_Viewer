@@ -41,22 +41,6 @@ Model::~Model() {
     }
 }
 
-// Method to get the diffuse texture ID
-GLuint Model::getTextureID(size_t materialIndex) const {
-    if (materialIndex < textures.size()) {
-        return textures[materialIndex];
-    }
-    return 0; // Return 0 if the index is out of bounds or no texture is assigned
-}
-
-// Method to get the specular texture ID
-GLuint Model::getSpecularTextureID(size_t materialIndex) const {
-    if (materialIndex < specularTextures.size()) {
-        return specularTextures[materialIndex];
-    }
-    return 0; // Return 0 if the index is out of bounds or no texture is assigned
-}
-
 // Load textures using stb_image
 void Model::loadTextures() {
     std::cout << "\nStarting to load textures..." << std::endl;
@@ -85,6 +69,11 @@ void Model::loadTextures() {
                     format = GL_RGB;
                 else if (nrComponents == 4)
                     format = GL_RGBA;
+                else {
+                    std::cerr << "Unknown number of components in texture: " << nrComponents << std::endl;
+                    stbi_image_free(data);
+                    continue;
+                }
 
                 glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
                 glGenerateMipmap(GL_TEXTURE_2D);
@@ -142,6 +131,18 @@ void Model::loadModel(const std::string& filepath) {
     for (const auto& material : materials) {
         std::cout << "\nMaterial name: " << material.name << std::endl;
         std::cout << "Diffuse texture: " << material.diffuse_texname << std::endl;
+    }
+
+    // Store diffuse colors for materials
+    for (const auto& material : materials) {
+        glm::vec3 diffuseColor(material.diffuse[0], material.diffuse[1], material.diffuse[2]);
+        diffuseColors.push_back(diffuseColor);
+
+        // Print the diffuse color for debugging
+        std::cout << "Material: " << material.name << " Diffuse color: ("
+            << material.diffuse[0] << ", "
+            << material.diffuse[1] << ", "
+            << material.diffuse[2] << ")" << std::endl;
     }
 
     // Process loaded data and group by materials
@@ -231,11 +232,7 @@ glm::mat4 Model::calculateModelMatrix() const {
     return translation * rotation * scaling;
 }
 
-glm::mat4 Model::getModelMatrix() const {
-    return calculateModelMatrix();
-}
-
-void Model::calculateBoundingBox(glm::vec3& min, glm::vec3& max) const {
+void Model::calculateBoundingBox(glm::vec3& min, glm::vec3& max) const { //Fits the model within a 1.0 unit box
     if (vertices.empty()) return;
 
     min = glm::vec3(vertices[0], vertices[1], vertices[2]);
@@ -248,26 +245,60 @@ void Model::calculateBoundingBox(glm::vec3& min, glm::vec3& max) const {
     }
 }
 
-void Model::draw() const {
+void Model::draw(GLuint programID) const {
     glBindVertexArray(vao);
 
     size_t indexOffset = 0;
     for (size_t i = 0; i < face_material_ids.size(); i++) {
         int material_id = face_material_ids[i];
 
+        // Check if a texture exists for this material and bind it
         if (material_id >= 0 && material_id < textures.size() && textures[material_id] != 0) {
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, textures[material_id]);
-        }
-        else {
-            glBindTexture(GL_TEXTURE_2D, 0); // Unbind texture if there is none
+            glUniform1i(glGetUniformLocation(programID, "useTexture"), 1);  // Tell the shader to use the texture
+        } else {
+            glBindTexture(GL_TEXTURE_2D, 0);  // Unbind texture (use diffuse color instead)
+            glUniform1i(glGetUniformLocation(programID, "useTexture"), 0);  // Tell the shader to use the diffuse color
+
+            // Set the material's diffuse color
+            glm::vec3 diffuseColor = getMaterialDiffuseColor(material_id);
+            glUniform3fv(glGetUniformLocation(programID, "material.DiffuseColor"), 1, &diffuseColor[0]);
         }
 
+        // Draw the face
         glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, (void*)(indexOffset * sizeof(unsigned int)));
         indexOffset += 3;
     }
 
     glBindVertexArray(0);
+}
+
+glm::vec3 Model::getMaterialDiffuseColor(size_t materialIndex) const {
+    if (materialIndex < diffuseColors.size()) {
+        return diffuseColors[materialIndex];
+    }
+    return glm::vec3(1.0f, 1.0f, 1.0f);  // Return white if index is out of bounds
+}
+
+glm::mat4 Model::getModelMatrix() const {
+    return calculateModelMatrix();
+}
+
+// Method to get the diffuse texture ID
+GLuint Model::getTextureID(size_t materialIndex) const {
+    if (materialIndex < textures.size()) {
+        return textures[materialIndex];
+    }
+    return 0; // Return 0 if the index is out of bounds or no texture is assigned
+}
+
+// Method to get the specular texture ID
+GLuint Model::getSpecularTextureID(size_t materialIndex) const {
+    if (materialIndex < specularTextures.size()) {
+        return specularTextures[materialIndex];
+    }
+    return 0; // Return 0 if the index is out of bounds or no texture is assigned
 }
 
 void Model::setPosition(const glm::vec3& pos) {

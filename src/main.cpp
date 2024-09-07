@@ -22,7 +22,7 @@ int main(int argc, char* args[]) {
         return -1;
     }
 
-    Model model("models/obj/monster.obj");
+    Model model("models/obj/Earth.obj");
 
     bool running = true;
     bool mouseCapturedByImGui = false;
@@ -41,35 +41,61 @@ int main(int argc, char* args[]) {
         float deltaTime = (currentTime - lastTime) / 1000.0f;
         lastTime = currentTime;
 
+        // Initialize io before the switch statement to avoid skipping it
+        ImGuiIO& io = ImGui::GetIO();
+        mouseCapturedByImGui = io.WantCaptureMouse;
+
         while (SDL_PollEvent(&event)) {
-            
-            if (event.type == SDL_QUIT) {
+
+            switch (event.type) {
+            case SDL_QUIT:
                 std::cout << "SDL_QUIT received" << std::endl;
                 running = false;
-            }
+                break;
 
-            if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE) {
-                std::cout << "SDL_WINDOWEVENT_CLOSE received" << std::endl;
-                running = false;
-            }
+            case SDL_WINDOWEVENT:
+                if (event.window.event == SDL_WINDOWEVENT_CLOSE) {
+                    std::cout << "SDL_WINDOWEVENT_CLOSE received" << std::endl;
+                    running = false;
+                }
+                break;
 
-            // Check if ImGui is capturing the mouse
-            ImGuiIO& io = ImGui::GetIO();
-            mouseCapturedByImGui = io.WantCaptureMouse;
-            
-            if (!mouseCapturedByImGui && event.type == SDL_MOUSEMOTION) {
-                camera.handleMouseMotion(event.motion.xrel, event.motion.yrel);
+            case SDL_MOUSEBUTTONDOWN:
+                if (!mouseCapturedByImGui && event.button.button == SDL_BUTTON_LEFT) {
+                    camera.handleMouseButton(true);  // Start rotating camera when left mouse button is pressed
+                }
+                break;
+
+            case SDL_MOUSEBUTTONUP:
+                if (!mouseCapturedByImGui && event.button.button == SDL_BUTTON_LEFT) {
+                    camera.handleMouseButton(false);  // Stop rotating camera when left mouse button is released
+                }
+                break;
+
+            case SDL_MOUSEMOTION:
+                if (!mouseCapturedByImGui && camera.isMouseHeld()) {  // Only rotate when the mouse button is held down
+                    camera.handleMouseMotion(event.motion.xrel, event.motion.yrel);  // Pass relative mouse movement
+                }
+                break;
+
+            case SDL_MOUSEWHEEL:
+                 camera.handleMouseScroll(static_cast<float>(event.wheel.y));  // y is positive for zoom in, negative for zoom out
+                break; 
             }
 
             ImGui_ImplSDL2_ProcessEvent(&event);
         }
+
         const Uint8* state = SDL_GetKeyboardState(NULL);
-        camera.handleKeyboardInput(state, deltaTime);
-       
+
+        // Render the model with the renderer
         renderer.render(model);
-        
+
+        // Run ImGui interface
         imguiApp.Run(&renderer, &model);
     }
+
+
 
     imguiApp.Cleanup();
     

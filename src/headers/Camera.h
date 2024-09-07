@@ -10,10 +10,12 @@ public:
     Camera(glm::vec3 position, glm::vec3 target, glm::vec3 up);
 
     glm::mat4 getViewMatrix() const;
-    void handleKeyboardInput(const Uint8* state, float deltaTime);
     void handleMouseMotion(int xrel, int yrel);
-    
+    void handleMouseScroll(float yOffset);
+    void handleMouseButton(bool mousePressed);
+
     glm::vec3 getPosition() const;
+    bool isMouseHeld() const;  // Add this function to check if the mouse is held
 
 private:
     void updateCameraVectors();
@@ -23,9 +25,13 @@ private:
     glm::vec3 up;
     glm::vec3 right;
     glm::vec3 worldUp;
+    glm::vec3 target;
 
     float yaw;
     float pitch;
+
+    float distanceFromTarget;
+    bool mouseHeld;  // This boolean tracks whether the mouse button is pressed
 };
 
 #endif
