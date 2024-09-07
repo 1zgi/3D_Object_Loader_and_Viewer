@@ -1,6 +1,7 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 
+#include <memory>
 #include "Window.h"
 #include "Model.h"
 #include "Camera.h"
@@ -17,7 +18,6 @@ public:
     void render(Model& model);
     void cleanup();
     
-
     //get methods
     glm::vec3 getAmbientLightIntensity() const;
     Camera& getCamera();

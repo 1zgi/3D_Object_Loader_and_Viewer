@@ -18,7 +18,7 @@ Renderer::Renderer(Window& window, Camera& camera)
     ambientLightIntensity(0.2f, 0.2f, 0.2f),
     vao(0),
     vbo(0),
-    positionPrinted(false) {}
+    positionPrinted(false){}
 
 Renderer::~Renderer() {
     cleanup();
@@ -59,7 +59,7 @@ bool Renderer::init() {
     glUseProgram(programID);
     glUniform3f(LightID, lightPos.x, lightPos.y, lightPos.z);
     glUniform3f(AmbientLightID, ambientLightIntensity.x, ambientLightIntensity.y, ambientLightIntensity.z);
-    
+
     return true;
 }
 
@@ -70,17 +70,21 @@ void Renderer::render(Model& model) {
     SDL_GetWindowSize(window.getWindow(), &width, &height);
     glViewport(0, 0, width, height);
 
+    // Update camera and matrices
+    glm::mat4 View = camera.getViewMatrix();
+    glm::mat4 Projection = glm::perspective(glm::radians(45.0f), (float)width / height, 0.1f, 100.0f);
+
     static float rotation = 0.0f;
     rotation += 10.0f * 0.016f;
     model.setRotation(rotation, glm::vec3(0.0f, 1.0f, 0.0f));
 
     glm::mat4 Model = model.getModelMatrix();
-    glm::mat4 View = camera.getViewMatrix();
     glm::mat4 MVP = Projection * View * Model;
 
-    glUniformMatrix4fv(glGetUniformLocation(programID, "MVP"), 1, GL_FALSE, &MVP[0][0]);
-    glUniformMatrix4fv(glGetUniformLocation(programID, "ModelMatrix"), 1, GL_FALSE, &Model[0][0]);
-    glUniformMatrix4fv(glGetUniformLocation(programID, "ViewMatrix"), 1, GL_FALSE, &View[0][0]);
+    // Set the shader uniforms for the floor plane
+    glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
+    glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &Model[0][0]);
+    glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &View[0][0]);
 
     // Set the directional light properties
     glUniform3f(glGetUniformLocation(programID, "dirLight.Intensity"), 1.0f, 1.0f, 1.0f);
@@ -103,7 +107,6 @@ void Renderer::render(Model& model) {
     glm::vec3 cameraPos = camera.getPosition();
     glUniform3f(glGetUniformLocation(programID, "gCameraLocalPos"), cameraPos.x, cameraPos.y, cameraPos.z);
 
-    
     size_t materialIndex = 0;
     // Set the diffuse color from the material (loaded from the MTL file)
     glm::vec3 materialDiffuseColor = model.getMaterialDiffuseColor(materialIndex);  // This should return the diffuse color from the material
@@ -132,7 +135,7 @@ void Renderer::render(Model& model) {
             << modelPosition_worldspace.z << ")\n" << std::endl;
         positionPrinted = true;
     }
-
+    
     model.draw(programID);
 
     GLenum err;
