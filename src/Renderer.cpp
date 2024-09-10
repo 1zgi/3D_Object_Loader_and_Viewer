@@ -63,7 +63,6 @@ bool Renderer::init() {
     }
 
     glUseProgram(programID);
-    glUseProgram(infiniteGroundShader);
     glUniform3f(LightID, lightPos.x, lightPos.y, lightPos.z);
     glUniform3f(AmbientLightID, ambientLightIntensity.x, ambientLightIntensity.y, ambientLightIntensity.z);
 
@@ -86,6 +85,17 @@ void Renderer::render(Model& model) {
     // Compute camera matrices
     glm::mat4 View = camera.getViewMatrix();
     glm::mat4 Projection = glm::perspective(glm::radians(45.0f), (float)width / height, 0.1f, 100.0f);
+
+    // Set the background (clear) color
+    glm::vec3 backgroundColor(0.2f, 0.3f, 0.3f);  // Example background color
+    glClearColor(backgroundColor.x, backgroundColor.y, backgroundColor.z, 1.0f);  // Set the OpenGL clear color
+
+    // In your rendering function, use this color for the ground
+    glUseProgram(infiniteGroundShader);
+
+    // Set the background color uniform in the ground shader
+    GLuint backgroundColorLocation = glGetUniformLocation(infiniteGroundShader, "backgroundColor");
+    glUniform3fv(backgroundColorLocation, 1, &backgroundColor[0]);
 
     // Render the ground
     glUseProgram(infiniteGroundShader);
@@ -119,6 +129,7 @@ void Renderer::render(Model& model) {
     glUniform1f(glGetUniformLocation(programID, "pointLight.Constant"), 1.0f);
     glUniform1f(glGetUniformLocation(programID, "pointLight.Linear"), 0.09f);
     glUniform1f(glGetUniformLocation(programID, "pointLight.Quadratic"), 0.032f);
+
     size_t materialIndex = 0;
     // Set the diffuse color from the material (loaded from the MTL file)
     glm::vec3 materialDiffuseColor = model.getMaterialDiffuseColor(materialIndex);  // This should return the diffuse color from the material

@@ -54,9 +54,10 @@ void InfiniteGround::renderGround(unsigned int shaderProgram, const glm::mat4& v
     }
 
     glm::mat4 model = glm::mat4(1.0f);
-    model = glm::scale(model, glm::vec3(1000.0f, 1.0f, 1000.0f));  // Large scale for infinite ground effect
-    GLint modelLoc = glGetUniformLocation(shaderProgram, "model");
+    model = glm::translate(model, glm::vec3(0.0f, -0.1f, 0.0f));  // Move ground slightly downwards
+    model = glm::scale(model, glm::vec3(1000.0f, 1.0f, 1000.0f));  // Large scale for "infinite" effect
 
+    GLint modelLoc = glGetUniformLocation(shaderProgram, "model");
     if (modelLoc != -1) {
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &model[0][0]);
     }
