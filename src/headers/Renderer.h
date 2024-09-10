@@ -6,6 +6,7 @@
 #include "Model.h"
 #include "Camera.h"
 #include "shader.hpp"
+#include "InfiniteGround.h"
 #include <glm/glm.hpp>
 #include <imgui.h>
 
@@ -16,17 +17,18 @@ public:
 
     bool init();
     void render(Model& model);
-    void cleanup();
-    
-    //get methods
-    glm::vec3 getAmbientLightIntensity() const;
-    Camera& getCamera();
-    Window& getWindow();
-
+    void addObject(std::shared_ptr<Model> obj);
+   
     //set methods
     void setAmbientLightIntensity(const glm::vec3& intensity);
     void setLightPosition(const glm::vec3& position);
-    
+    glm::vec3 getAmbientLightIntensity() const;
+
+    //get methods
+    Camera& getCamera();
+    Window& getWindow();
+
+    void cleanup();
 
 private:
 
@@ -34,11 +36,14 @@ private:
     Camera& camera;
 
     GLuint programID;
+    GLuint infiniteGroundShader;
+
     GLuint MatrixID;
     GLuint ViewMatrixID;
     GLuint ModelMatrixID;
     GLuint LightID;
     GLuint AmbientLightID;
+    
 
     glm::mat4 Projection;
     glm::vec3 lightPos;
@@ -55,6 +60,8 @@ private:
     glm::vec3 dirLightDirection;
     glm::vec3 dirLightIntensity;
 
+    std::unique_ptr<InfiniteGround> infiniteGround;
+    std::vector<std::shared_ptr<Model>> objects;  // To store multiple objects to render
 };
 
 #endif // RENDERER_H

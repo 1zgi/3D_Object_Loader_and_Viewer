@@ -4,6 +4,7 @@ Renderer::Renderer(Window& window, Camera& camera)
     : window(window),
     camera(camera),
     programID(0),
+    infiniteGroundShader(0),
     MatrixID(0),
     ViewMatrixID(0),
     ModelMatrixID(0),
@@ -18,6 +19,7 @@ Renderer::Renderer(Window& window, Camera& camera)
     ambientLightIntensity(0.2f, 0.2f, 0.2f),
     vao(0),
     vbo(0),
+    infiniteGround(std::make_unique<InfiniteGround>()),
     positionPrinted(false){}
 
 Renderer::~Renderer() {
@@ -25,11 +27,13 @@ Renderer::~Renderer() {
 }
 
 bool Renderer::init() {
+    // Initialize OpenGL, shaders, and GLEW (as before)
     glewExperimental = GL_TRUE;
     if (glewInit() != GLEW_OK) {
         fprintf(stderr, "Failed to initialize GLEW\n");
         return false;
     }
+
     // Set the background (clear) color here
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 
@@ -40,7 +44,9 @@ bool Renderer::init() {
     glFrontFace(GL_CCW);
 
     programID = LoadShaders("src/shaders/vert.glsl", "src/shaders/frag.glsl");
-    if (programID == 0) {
+    infiniteGroundShader = LoadShaders("src/shaders/infiniteGroundVert.glsl", "src/shaders/infiniteGroundFrag.glsl");
+
+    if (programID == 0 || infiniteGroundShader == 0) {
         fprintf(stderr, "Failed to load shaders\n");
         return false;
     }
@@ -57,22 +63,36 @@ bool Renderer::init() {
     }
 
     glUseProgram(programID);
+    glUseProgram(infiniteGroundShader);
     glUniform3f(LightID, lightPos.x, lightPos.y, lightPos.z);
     glUniform3f(AmbientLightID, ambientLightIntensity.x, ambientLightIntensity.y, ambientLightIntensity.z);
 
     return true;
 }
 
+void Renderer::addObject(std::shared_ptr<Model> obj) {
+    objects.push_back(obj);  // Add the object to the render list
+}
+
 void Renderer::render(Model& model) {
+    // Clear the screen
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    // Get window size for the viewport
     int width, height;
     SDL_GetWindowSize(window.getWindow(), &width, &height);
     glViewport(0, 0, width, height);
 
-    // Update camera and matrices
+    // Compute camera matrices
     glm::mat4 View = camera.getViewMatrix();
     glm::mat4 Projection = glm::perspective(glm::radians(45.0f), (float)width / height, 0.1f, 100.0f);
+
+    // Render the ground
+    glUseProgram(infiniteGroundShader);
+    infiniteGround->renderGround(infiniteGroundShader, View, Projection);
+
+    // Use the program for objects
+    glUseProgram(programID);
 
     static float rotation = 0.0f;
     rotation += 10.0f * 0.016f;
@@ -81,12 +101,12 @@ void Renderer::render(Model& model) {
     glm::mat4 Model = model.getModelMatrix();
     glm::mat4 MVP = Projection * View * Model;
 
-    // Set the shader uniforms for the floor plane
+    // Set shader uniforms for the object
     glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
     glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &Model[0][0]);
     glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &View[0][0]);
 
-    // Set the directional light properties
+    // Set directional light properties
     glUniform3f(glGetUniformLocation(programID, "dirLight.Intensity"), 1.0f, 1.0f, 1.0f);
     glUniform3f(glGetUniformLocation(programID, "dirLight.Direction"), -1.0f, -1.0f, -1.0f);
 
@@ -95,18 +115,10 @@ void Renderer::render(Model& model) {
     glUniform3f(glGetUniformLocation(programID, "pointLight.Intensity"), 1.0f, 1.0f, 1.0f);
     glUniform3f(glGetUniformLocation(programID, "pointLight.Position"), pointLightPosition.x, pointLightPosition.y, pointLightPosition.z);
 
-    // Set the material properties
-    glUniform3f(glGetUniformLocation(programID, "material.SpecularColor"), 1.0f, 1.0f, 1.0f);
-    glUniform1i(glGetUniformLocation(programID, "material.specularTexture"), 1);
-
+    // Set the point light attenuation
     glUniform1f(glGetUniformLocation(programID, "pointLight.Constant"), 1.0f);
     glUniform1f(glGetUniformLocation(programID, "pointLight.Linear"), 0.09f);
-    glUniform1f(glGetUniformLocation(programID, "pointLight.Quadratic"), 0.032f); 
-
-    // Set the camera position
-    glm::vec3 cameraPos = camera.getPosition();
-    glUniform3f(glGetUniformLocation(programID, "gCameraLocalPos"), cameraPos.x, cameraPos.y, cameraPos.z);
-
+    glUniform1f(glGetUniformLocation(programID, "pointLight.Quadratic"), 0.032f);
     size_t materialIndex = 0;
     // Set the diffuse color from the material (loaded from the MTL file)
     glm::vec3 materialDiffuseColor = model.getMaterialDiffuseColor(materialIndex);  // This should return the diffuse color from the material
@@ -135,19 +147,26 @@ void Renderer::render(Model& model) {
             << modelPosition_worldspace.z << ")\n" << std::endl;
         positionPrinted = true;
     }
-    
+
     model.draw(programID);
 
+    // Check for OpenGL errors
     GLenum err;
     while ((err = glGetError()) != GL_NO_ERROR) {
         std::cerr << "OpenGL error: " << err << std::endl;
     }
 }
 
+
 void Renderer::cleanup() {
     if (programID) {
         glDeleteProgram(programID);
         programID = 0;
+    }
+
+    if (infiniteGroundShader) {
+        glDeleteProgram(infiniteGroundShader);
+        infiniteGroundShader = 0;
     }
 }
 
