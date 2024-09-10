@@ -130,8 +130,9 @@ void Model::loadModel(const std::string& filepath) {
 
     for (const auto& material : materials) {
         std::cout << "\nMaterial name: " << material.name << std::endl;
-        std::cout << "Diffuse texture: " << material.diffuse_texname << std::endl;
+        std::cout << "Diffuse texture: " << material.diffuse_texname << "\n" << std::endl;
     }
+
 
     // Store diffuse colors for materials
     for (const auto& material : materials) {
