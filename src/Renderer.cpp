@@ -12,7 +12,7 @@ Renderer::Renderer(Window& window, Camera& camera)
     AmbientLightID(0),
     Projection(glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f)),
     dirLightDirection(-1.0f, -1.0f, -1.0f),
-    dirLightIntensity (1.0f, 1.0f, 1.0f),
+    dirLightIntensity(1.0f, 1.0f, 1.0f),
     dirLightColor(0),
     lightPos(4.0f, 4.0f, 4.0f),
     lightIntensity(1.0f, 1.0f, 1.0f),
@@ -20,29 +20,32 @@ Renderer::Renderer(Window& window, Camera& camera)
     vao(0),
     vbo(0),
     infiniteGround(std::make_unique<InfiniteGround>()),
-    positionPrinted(false){}
+    positionPrinted(false),
+    groundHeightSet(false) {}
 
 Renderer::~Renderer() {
     cleanup();
 }
 
 bool Renderer::init() {
-    // Initialize OpenGL, shaders, and GLEW (as before)
+    // Initialize OpenGL, shaders, and GLEW
     glewExperimental = GL_TRUE;
     if (glewInit() != GLEW_OK) {
         fprintf(stderr, "Failed to initialize GLEW\n");
         return false;
     }
 
-    // Set the background (clear) color here
+    // Set the background (clear) color
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 
+    // Enable depth test and culling
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
     glFrontFace(GL_CCW);
 
+    // Load the shader programs
     programID = LoadShaders("src/shaders/vert.glsl", "src/shaders/frag.glsl");
     infiniteGroundShader = LoadShaders("src/shaders/infiniteGroundVert.glsl", "src/shaders/infiniteGroundFrag.glsl");
 
@@ -51,26 +54,19 @@ bool Renderer::init() {
         return false;
     }
 
+    // Get uniform locations for object shader
     MatrixID = glGetUniformLocation(programID, "MVP");
     ViewMatrixID = glGetUniformLocation(programID, "V");
     ModelMatrixID = glGetUniformLocation(programID, "M");
     LightID = glGetUniformLocation(programID, "LightPosition_worldspace");
     AmbientLightID = glGetUniformLocation(programID, "AmbientLightIntensity");
 
-    if (MatrixID == -1 || ViewMatrixID == -1 || ModelMatrixID == -1 || LightID == -1 || AmbientLightID == -1) {
-        std::cerr << "Failed to get uniform locations\n";
-        return false;
-    }
-
+    // Pass light uniforms
     glUseProgram(programID);
     glUniform3f(LightID, lightPos.x, lightPos.y, lightPos.z);
     glUniform3f(AmbientLightID, ambientLightIntensity.x, ambientLightIntensity.y, ambientLightIntensity.z);
 
     return true;
-}
-
-void Renderer::addObject(std::shared_ptr<Model> obj) {
-    objects.push_back(obj);  // Add the object to the render list
 }
 
 void Renderer::render(Model& model) {
@@ -86,32 +82,38 @@ void Renderer::render(Model& model) {
     glm::mat4 View = camera.getViewMatrix();
     glm::mat4 Projection = glm::perspective(glm::radians(45.0f), (float)width / height, 0.1f, 100.0f);
 
-    // Set the background (clear) color
-    glm::vec3 backgroundColor(0.2f, 0.3f, 0.3f);  // Example background color
-    glClearColor(backgroundColor.x, backgroundColor.y, backgroundColor.z, 1.0f);  // Set the OpenGL clear color
-
-    // In your rendering function, use this color for the ground
-    glUseProgram(infiniteGroundShader);
-
-    // Set the background color uniform in the ground shader
-    GLuint backgroundColorLocation = glGetUniformLocation(infiniteGroundShader, "backgroundColor");
-    glUniform3fv(backgroundColorLocation, 1, &backgroundColor[0]);
-
-    // Render the ground
-    glUseProgram(infiniteGroundShader);
-    infiniteGround->renderGround(infiniteGroundShader, View, Projection);
-
-    // Use the program for objects
-    glUseProgram(programID);
-
     static float rotation = 0.0f;
     rotation += 10.0f * 0.016f;
     model.setRotation(rotation, glm::vec3(0.0f, 1.0f, 0.0f));
 
+    // Set the background (clear) color
+    glm::vec3 backgroundColor(0.2f, 0.3f, 0.3f);  // Example background color
+    glClearColor(backgroundColor.x, backgroundColor.y, backgroundColor.z, 1.0f);  // Set the OpenGL clear color
+
+    // Calculate the ground height only once, or when the model's lowest point changes
+    if (!groundHeightSet || model.isLowestPointUpdateNeeded()) {
+        float lowestPoint = model.getLowestPoint();  // Get the lowest point of the model
+        std::cout << "Lowest Point: " << lowestPoint << std::endl;
+        float groundHeight = lowestPoint - 0.001f;     // Place the ground just below the object
+        infiniteGround->setHeight(groundHeight);     // Set the ground height
+        std::cout << "Ground Height Set: " << groundHeight << "\n" << std::endl;
+        groundHeightSet = true;  // Ensure this is only done once
+    }
+
+    // Render the ground
+    glUseProgram(infiniteGroundShader);
+    GLuint backgroundColorLocation = glGetUniformLocation(infiniteGroundShader, "backgroundColor");
+    glUniform3fv(backgroundColorLocation, 1, &backgroundColor[0]);
+    infiniteGround->renderGround(infiniteGroundShader, View, Projection);
+
+    // Render the object
+    glUseProgram(programID);
+
+    // Model matrix and MVP
     glm::mat4 Model = model.getModelMatrix();
     glm::mat4 MVP = Projection * View * Model;
 
-    // Set shader uniforms for the object
+    // Pass the matrices to the shader
     glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
     glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &Model[0][0]);
     glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &View[0][0]);
@@ -130,9 +132,9 @@ void Renderer::render(Model& model) {
     glUniform1f(glGetUniformLocation(programID, "pointLight.Linear"), 0.09f);
     glUniform1f(glGetUniformLocation(programID, "pointLight.Quadratic"), 0.032f);
 
+    // Set material properties
     size_t materialIndex = 0;
-    // Set the diffuse color from the material (loaded from the MTL file)
-    glm::vec3 materialDiffuseColor = model.getMaterialDiffuseColor(materialIndex);  // This should return the diffuse color from the material
+    glm::vec3 materialDiffuseColor = model.getMaterialDiffuseColor(materialIndex);
     glUniform3fv(glGetUniformLocation(programID, "material.DiffuseColor"), 1, &materialDiffuseColor[0]);
 
     // Check if the texture exists and set the useTexture uniform
@@ -143,23 +145,13 @@ void Renderer::render(Model& model) {
     if (textureAvailable) {
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, model.getTextureID(0));
-        glUniform1i(glGetUniformLocation(programID, "material.diffuseTexture"), 0);  // Set the texture unit
+        glUniform1i(glGetUniformLocation(programID, "material.diffuseTexture"), 0);
     }
 
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, model.getSpecularTextureID(0));  // Specular texture
-
-    // Print model position in world space once
-    if (!positionPrinted) {
-        glm::vec4 modelPosition_worldspace = Model * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-        std::cout << "\nModel Position in World Space: ("
-            << modelPosition_worldspace.x << ", "
-            << modelPosition_worldspace.y << ", "
-            << modelPosition_worldspace.z << ")\n" << std::endl;
-        positionPrinted = true;
-    }
-
+    // Render the model
     model.draw(programID);
+
+    model.updateLowestPoint();  // Update the lowest point of the model
 
     // Check for OpenGL errors
     GLenum err;
@@ -167,7 +159,6 @@ void Renderer::render(Model& model) {
         std::cerr << "OpenGL error: " << err << std::endl;
     }
 }
-
 
 void Renderer::cleanup() {
     if (programID) {
@@ -186,7 +177,7 @@ void Renderer::setLightPosition(const glm::vec3& position) {
     glUniform3f(LightID, lightPos.x, lightPos.y, lightPos.z);
 }
 
-void Renderer::setAmbientLightIntensity(const glm::vec3& intensity){
+void Renderer::setAmbientLightIntensity(const glm::vec3& intensity) {
     ambientLightIntensity = intensity;
     glUniform3f(AmbientLightID, ambientLightIntensity.x, ambientLightIntensity.y, ambientLightIntensity.z);
 }
@@ -202,4 +193,3 @@ Window& Renderer::getWindow() {
 Camera& Renderer::getCamera() {
     return camera;
 }
-

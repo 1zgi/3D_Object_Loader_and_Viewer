@@ -1,20 +1,26 @@
 #pragma once
-#ifndef INFINITE_GROUND_H
-#define INFINITE_GROUND_H
+#ifndef INFINITEGROUND_H
+#define INFINITEGROUND_H
 
 #include <GL/glew.h>
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <iostream>
 
 class InfiniteGround {
 public:
     InfiniteGround();
     ~InfiniteGround();
-    void renderGround(GLuint shaderProgram, const glm::mat4& view, const glm::mat4& projection) const;
+
+    // Set the height of the ground
+    void setHeight(float height);
+
+    // Render the ground
+    void renderGround(GLuint shaderProgram, const glm::mat4& view, const glm::mat4& projection);
 
 private:
-    GLuint VAO, VBO, EBO;
+    GLuint VAO, VBO, EBO;  // OpenGL buffers for the ground
+    float groundHeight;    // Ground's vertical position (Y-coordinate)
+
+    glm::mat4 modelMatrix; // Model matrix for the ground
 };
 
-#endif // INFINITE_GROUND_H
+#endif // INFINITEGROUND_H

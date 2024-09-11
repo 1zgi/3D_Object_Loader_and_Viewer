@@ -1,4 +1,5 @@
 #include "headers/Model.h"
+#include <limits>  // For std::numeric_limits
 
 // Constructor
 Model::Model(const std::string& filepath) {
@@ -20,6 +21,8 @@ Model::Model(const std::string& filepath) {
     rotationAxis = glm::vec3(0.0f, 1.0f, 0.0f);
     rotationAngle = 0.0f;
     scale = glm::vec3(scaleFactor);
+
+    needsLowestPointUpdate = true;  // Ensure the lowest point is calculated initially
 }
 
 // Destructor to clean up OpenGL buffers
@@ -101,7 +104,6 @@ void Model::loadTextures() {
     std::cout << "Finished loading textures.\n" << std::endl;
 }
 
-
 // Load the model from the OBJ file using tinyobjloader
 void Model::loadModel(const std::string& filepath) {
     tinyobj::attrib_t attrib;
@@ -128,22 +130,16 @@ void Model::loadModel(const std::string& filepath) {
         return;
     }
 
+    // Debug output
     for (const auto& material : materials) {
-        std::cout << "\nMaterial name: " << material.name << std::endl;
-        std::cout << "Diffuse texture: " << material.diffuse_texname << "\n" << std::endl;
+        std::cout << "Material name: " << material.name << std::endl;
+        std::cout << "Diffuse texture: " << material.diffuse_texname << std::endl;
     }
-
 
     // Store diffuse colors for materials
     for (const auto& material : materials) {
         glm::vec3 diffuseColor(material.diffuse[0], material.diffuse[1], material.diffuse[2]);
         diffuseColors.push_back(diffuseColor);
-
-        // Print the diffuse color for debugging
-        std::cout << "Material: " << material.name << " Diffuse color: ("
-            << material.diffuse[0] << ", "
-            << material.diffuse[1] << ", "
-            << material.diffuse[2] << ")" << std::endl;
     }
 
     // Process loaded data and group by materials
@@ -181,11 +177,7 @@ void Model::loadModel(const std::string& filepath) {
         }
     }
 
-    std::cout << "\nModel loaded successfully." << std::endl;
-    std::cout << "Number of vertices: " << vertices.size() / 3 << std::endl;
-    std::cout << "Number of normals: " << normals.size() / 3 << std::endl;
-    std::cout << "Number of texture coordinates: " << texcoords.size() / 2 << std::endl;
-    std::cout << "Number of triangles: " << indices.size() / 3<<"\n" << std::endl;
+    std::cout << "Model loaded successfully.\n" << std::endl;
 }
 
 // Setup OpenGL buffers
@@ -226,6 +218,40 @@ void Model::setupBuffers() {
     glBindVertexArray(0); // Unbind the VAO
 }
 
+// Efficiently calculates the lowest point (y-coordinate) of the model
+float Model::getLowestPoint() const {
+    if (needsLowestPointUpdate) {
+        updateLowestPoint();
+    }
+    return lowestPoint;
+}
+
+void Model::updateLowestPoint() const{
+    // Only recalculate if transformations have changed
+    if (!needsLowestPointUpdate) {
+        return;
+    }
+
+    float minY = std::numeric_limits<float>::max();
+
+    for (size_t i = 0; i < vertices.size() / 3; i++) {
+        glm::vec3 vertex(vertices[3 * i], vertices[3 * i + 1], vertices[3 * i + 2]);
+
+        // Apply model transformations to the vertex
+        glm::vec4 transformedVertex = getModelMatrix() * glm::vec4(vertex, 1.0f);
+
+        // Check for the minimum Y value after transformation
+        if (transformedVertex.y < minY) {
+            minY = transformedVertex.y;
+        }
+    }
+
+    lowestPoint = minY;
+    needsLowestPointUpdate = false;  // Reset the flag after updating
+}
+
+
+// Transformation matrix calculation
 glm::mat4 Model::calculateModelMatrix() const {
     glm::mat4 translation = glm::translate(glm::mat4(1.0f), position);
     glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), glm::radians(rotationAngle), rotationAxis);
@@ -246,6 +272,7 @@ void Model::calculateBoundingBox(glm::vec3& min, glm::vec3& max) const { //Fits 
     }
 }
 
+// Method to render the model
 void Model::draw(GLuint programID) const {
     glBindVertexArray(vao);
 
@@ -258,7 +285,8 @@ void Model::draw(GLuint programID) const {
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, textures[material_id]);
             glUniform1i(glGetUniformLocation(programID, "useTexture"), 1);  // Tell the shader to use the texture
-        } else {
+        }
+        else {
             glBindTexture(GL_TEXTURE_2D, 0);  // Unbind texture (use diffuse color instead)
             glUniform1i(glGetUniformLocation(programID, "useTexture"), 0);  // Tell the shader to use the diffuse color
 
@@ -273,6 +301,10 @@ void Model::draw(GLuint programID) const {
     }
 
     glBindVertexArray(0);
+}
+
+bool Model::isLowestPointUpdateNeeded() const {
+    return needsLowestPointUpdate;
 }
 
 glm::vec3 Model::getMaterialDiffuseColor(size_t materialIndex) const {
@@ -308,6 +340,7 @@ glm::vec3 Model::getPosition() const {
 
 void Model::setPosition(const glm::vec3& pos) {
     position = pos;
+    needsLowestPointUpdate = true;
 }
 
 void Model::setRotation(float angle, const glm::vec3& axis) {

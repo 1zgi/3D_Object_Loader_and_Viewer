@@ -1,14 +1,17 @@
 #include "headers/InfiniteGround.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <GL/glew.h>
+#include <iostream>  // For debugging
 
-InfiniteGround::InfiniteGround() {
-    // Define vertices for a simple plane
+InfiniteGround::InfiniteGround()
+    : groundHeight(0.0f), modelMatrix(glm::mat4(1.0f))  // Initialize ground height and model matrix
+{
+    // Define vertices for a large ground plane
     float quadVertices[] = {
-        -1.0f,  0.0f, -1.0f,   // Bottom-left
-         1.0f,  0.0f, -1.0f,   // Bottom-right
-         1.0f,  0.0f,  1.0f,   // Top-right
-        -1.0f,  0.0f,  1.0f    // Top-left
+        -500.0f,  0.0f, -500.0f,   // Bottom-left
+         500.0f,  0.0f, -500.0f,   // Bottom-right
+         500.0f,  0.0f,  500.0f,   // Top-right
+        -500.0f,  0.0f,  500.0f    // Top-left
     };
 
     // Reverse the winding order to flip normals
@@ -33,7 +36,7 @@ InfiniteGround::InfiniteGround() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    glBindVertexArray(0);
+    glBindVertexArray(0);  // Unbind VAO
 }
 
 InfiniteGround::~InfiniteGround() {
@@ -42,27 +45,20 @@ InfiniteGround::~InfiniteGround() {
     glDeleteBuffers(1, &EBO);
 }
 
-void InfiniteGround::renderGround(unsigned int shaderProgram, const glm::mat4& view, const glm::mat4& projection) const {
-    glUseProgram(shaderProgram);
+void InfiniteGround::renderGround(GLuint shaderProgram, const glm::mat4& view, const glm::mat4& projection) {
+    glm::mat4 MVP = projection * view * modelMatrix;
 
-    GLint viewLoc = glGetUniformLocation(shaderProgram, "view");
-    GLint projectionLoc = glGetUniformLocation(shaderProgram, "projection");
-
-    if (viewLoc != -1 && projectionLoc != -1) {
-        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view[0][0]);
-        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, &projection[0][0]);
-    }
-
-    glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(0.0f, -0.1f, 0.0f));  // Move ground slightly downwards
-    model = glm::scale(model, glm::vec3(1000.0f, 1.0f, 1000.0f));  // Large scale for "infinite" effect
-
-    GLint modelLoc = glGetUniformLocation(shaderProgram, "model");
-    if (modelLoc != -1) {
-        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &model[0][0]);
-    }
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "MVP"), 1, GL_FALSE, &MVP[0][0]);
 
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
+}
+
+
+void InfiniteGround::setHeight(float height) {
+    groundHeight = height;
+
+    float groundOffset = 0.001f;
+    modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, groundHeight - groundOffset, 0.1f));
 }
