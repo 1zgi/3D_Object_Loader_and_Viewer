@@ -1,4 +1,3 @@
-#pragma once
 #ifndef MODEL_H
 #define MODEL_H
 
@@ -35,12 +34,26 @@ public:
     // Sets the model's scale
     void setScale(const glm::vec3& scale);
 
+    // Gets the texture ID for the given material index
     GLuint getTextureID(size_t materialIndex) const;
 
+    // Gets the specular texture ID for the given material index
     GLuint getSpecularTextureID(size_t materialIndex) const;
+
+    // Returns the current position of the model
+    glm::vec3 getPosition() const;
 
     // Gets the diffuse color from the material if no texture is available
     glm::vec3 getMaterialDiffuseColor(size_t materialIndex) const;
+
+    // Calculates and returns the lowest point (Y-coordinate) of the model
+    float getLowestPoint() const;
+
+    // Update the lowest point when the model is transformed
+    void updateLowestPoint() const;
+
+    // Getter for checking if the lowest point needs to be updated
+    bool isLowestPointUpdateNeeded() const;
 
 private:
     // Loads the model from an OBJ file
@@ -81,6 +94,12 @@ private:
 
     // Material diffuse colors for each material
     std::vector<glm::vec3> diffuseColors;  // Store diffuse color for each material
+
+    // Cache the lowest point to avoid recalculating each frame
+    mutable float lowestPoint;
+
+    // Flag to check if we need to recalculate the lowest point
+    mutable bool needsLowestPointUpdate;
 
     // Model transformation attributes
     glm::vec3 position;

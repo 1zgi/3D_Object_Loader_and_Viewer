@@ -22,7 +22,7 @@ int main(int argc, char* args[]) {
         return -1;
     }
 
-    Model model("models/obj/Earth.obj");
+    Model model("models/obj/monster.obj");
 
     bool running = true;
     bool mouseCapturedByImGui = false;
@@ -95,11 +95,9 @@ int main(int argc, char* args[]) {
         imguiApp.Run(&renderer, &model);
     }
 
-
-
     imguiApp.Cleanup();
     
-    
+    window.swapBuffers();
 
     return 0;
 }
