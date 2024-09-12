@@ -6,6 +6,7 @@
 #include "Model.h"
 #include "Camera.h"
 #include "shader.hpp"
+#include "Lights.h"
 #include "InfiniteGround.h"
 #include <glm/glm.hpp>
 #include <vector>
@@ -50,6 +51,7 @@ private:
     GLuint ModelMatrixID;
     GLuint LightID;
     GLuint AmbientLightID;
+
 
     // Projection matrix for the camera
     glm::mat4 Projection;

@@ -54,6 +54,8 @@ bool Renderer::init() {
         return false;
     }
 
+    infiniteGround->initGround(infiniteGroundShader);
+
     // Get uniform locations for object shader
     MatrixID = glGetUniformLocation(programID, "MVP");
     ViewMatrixID = glGetUniformLocation(programID, "V");
@@ -87,24 +89,43 @@ void Renderer::render(Model& model) {
     model.setRotation(rotation, glm::vec3(0.0f, 1.0f, 0.0f));
 
     // Set the background (clear) color
-    glm::vec3 backgroundColor(0.2f, 0.3f, 0.3f);  // Example background color
-    glClearColor(backgroundColor.x, backgroundColor.y, backgroundColor.z, 1.0f);  // Set the OpenGL clear color
+    glm::vec3 backgroundColor(0.2f, 0.3f, 0.3f);
+    glClearColor(backgroundColor.x, backgroundColor.y, backgroundColor.z, 1.0f);        // Set the OpenGL clear color
 
     // Calculate the ground height only once, or when the model's lowest point changes
     if (!groundHeightSet || model.isLowestPointUpdateNeeded()) {
-        float lowestPoint = model.getLowestPoint();  // Get the lowest point of the model
+        float lowestPoint = model.getLowestPoint();                                 // Get the lowest point of the model
         std::cout << "Lowest Point: " << lowestPoint << std::endl;
-        float groundHeight = lowestPoint - 0.001f;     // Place the ground just below the object
-        infiniteGround->setHeight(groundHeight);     // Set the ground height
+        float groundHeight = lowestPoint - 0.001f;                                // Place the ground just below the object
+        infiniteGround->setHeight(groundHeight);                                 // Set the ground height
         std::cout << "Ground Height Set: " << groundHeight << "\n" << std::endl;
-        groundHeightSet = true;  // Ensure this is only done once
+        groundHeightSet = true;                                                // Ensure this is only done once
     }
+
+    // Define your lights (spotlight, directional light, point light)
+    Lights directionalLight(LightType::DIRECTIONAL);
+    directionalLight.setDirection(glm::vec3(-1.0f, -1.0f, -1.0f));
+    directionalLight.setIntensity(glm::vec3(1.0f, 1.0f, 1.0f));
+    directionalLight.setAmbientIntensity(glm::vec3(0.5f, 0.5f, 0.5f));      // Low ambient light
+    directionalLight.setSpecularIntensity(glm::vec3(0.05f, 0.05f, 0.05f)); // White specular light
+
+    Lights pointLight(LightType::POINT);
+    pointLight.setPosition(glm::vec3(0.0f, 5.0f, 0.0f));   // Position above the scene
+    pointLight.setIntensity(glm::vec3(1.0f, 1.0f, 1.0f)); // Intensity
+    pointLight.setAttenuation(1.0f, 0.22f, 0.20f);       // Attenuation
+
+    Lights spotLight(LightType::SPOT);
+    spotLight.setPosition(glm::vec3(0.0f, 10.0f, 0.0f));    // Position above the object
+    spotLight.setDirection(glm::vec3(0.0f, -1.0f, 0.0f));  // Pointing downwards
+    spotLight.setIntensity(glm::vec3(2.0f, 2.0f, 2.0f));  // Intensity
+    spotLight.setCutOff(12.5f);
+    spotLight.setOuterCutOff(17.5f);
+    spotLight.setAttenuation(1.0f, 0.09f, 0.032f);
+    spotLight.setSpecularIntensity(glm::vec3(0.5f, 0.5f, 0.5f)); // White specular light
 
     // Render the ground
     glUseProgram(infiniteGroundShader);
-    GLuint backgroundColorLocation = glGetUniformLocation(infiniteGroundShader, "backgroundColor");
-    glUniform3fv(backgroundColorLocation, 1, &backgroundColor[0]);
-    infiniteGround->renderGround(infiniteGroundShader, View, Projection);
+    infiniteGround->renderGround(View, Projection, directionalLight, pointLight, spotLight, backgroundColor);
 
     // Render the object
     glUseProgram(programID);
@@ -113,25 +134,16 @@ void Renderer::render(Model& model) {
     glm::mat4 Model = model.getModelMatrix();
     glm::mat4 MVP = Projection * View * Model;
 
-    // Pass the matrices to the shader
+    // Pass the matrices to the shader for object rendering
     glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
     glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &Model[0][0]);
     glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &View[0][0]);
 
-    // Set directional light properties
-    glUniform3f(glGetUniformLocation(programID, "dirLight.Intensity"), 1.0f, 1.0f, 1.0f);
-    glUniform3f(glGetUniformLocation(programID, "dirLight.Direction"), -1.0f, -1.0f, -1.0f);
-
-    // Set the point light properties
-    glm::vec3 pointLightPosition(5.0f, 5.0f, 5.0f); // Example position of the point light
-    glUniform3f(glGetUniformLocation(programID, "pointLight.Intensity"), 1.0f, 1.0f, 1.0f);
-    glUniform3f(glGetUniformLocation(programID, "pointLight.Position"), pointLightPosition.x, pointLightPosition.y, pointLightPosition.z);
-
-    // Set the point light attenuation
-    glUniform1f(glGetUniformLocation(programID, "pointLight.Constant"), 1.0f);
-    glUniform1f(glGetUniformLocation(programID, "pointLight.Linear"), 0.09f);
-    glUniform1f(glGetUniformLocation(programID, "pointLight.Quadratic"), 0.032f);
-
+    // Pass the light data to both object and ground shaders
+    directionalLight.sendToShader(programID, "dirLight");
+    pointLight.sendToShader(programID, "pointLight");
+    spotLight.sendToShader(programID, "spotLight");
+    
     // Set material properties
     size_t materialIndex = 0;
     glm::vec3 materialDiffuseColor = model.getMaterialDiffuseColor(materialIndex);

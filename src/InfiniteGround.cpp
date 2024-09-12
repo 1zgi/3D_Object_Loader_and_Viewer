@@ -3,41 +3,23 @@
 #include <GL/glew.h>
 #include <iostream>  // For debugging
 
+// Vertices (position + normal) for a simple quad ground plane
+float quadVertices[] = {
+    // Positions           // Normals
+    -500.0f,  0.0f, -500.0f,   0.0f, 1.0f, 0.0f,  // Bottom-left
+     500.0f,  0.0f, -500.0f,   0.0f, 1.0f, 0.0f,  // Bottom-right
+     500.0f,  0.0f,  500.0f,   0.0f, 1.0f, 0.0f,  // Top-right
+    -500.0f,  0.0f,  500.0f,   0.0f, 1.0f, 0.0f   // Top-left
+};
+
+// Reverse the winding order to flip normals
+unsigned int quadIndices[] = {
+    0, 3, 2,   // Triangle 1
+    2, 1, 0    // Triangle 2
+};
+
 InfiniteGround::InfiniteGround()
-    : groundHeight(0.0f), modelMatrix(glm::mat4(1.0f))  // Initialize ground height and model matrix
-{
-    // Define vertices for a large ground plane
-    float quadVertices[] = {
-        -500.0f,  0.0f, -500.0f,   // Bottom-left
-         500.0f,  0.0f, -500.0f,   // Bottom-right
-         500.0f,  0.0f,  500.0f,   // Top-right
-        -500.0f,  0.0f,  500.0f    // Top-left
-    };
-
-    // Reverse the winding order to flip normals
-    unsigned int quadIndices[] = {
-        0, 3, 2,   // Triangle 1
-        2, 1, 0    // Triangle 2
-    };
-
-    // Generate and bind VAO, VBO, EBO
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
-
-    glBindVertexArray(VAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(quadIndices), quadIndices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    glBindVertexArray(0);  // Unbind VAO
-}
+    : groundHeight(0.0f), modelMatrix(glm::mat4(1.0f)), GroundShaderID(0),VAO(0),VBO(0) ,EBO(0){}  // Initialize ground height and model matrix
 
 InfiniteGround::~InfiniteGround() {
     glDeleteVertexArrays(1, &VAO);
@@ -45,20 +27,116 @@ InfiniteGround::~InfiniteGround() {
     glDeleteBuffers(1, &EBO);
 }
 
-void InfiniteGround::renderGround(GLuint shaderProgram, const glm::mat4& view, const glm::mat4& projection) {
+void InfiniteGround::initGround(GLuint shaderProgram) {
+    setShader(shaderProgram);
+    setupBuffers();
+}
+
+void InfiniteGround::renderGround(const glm::mat4& view, const glm::mat4& projection, Lights& directionalLight, Lights& pointLight, Lights& spotLight, glm::vec3 backgroundcolor) {
+
+    GLuint backgroundColorLocation = glGetUniformLocation(GroundShaderID, "backgroundColor");
+    glUniform3fv(backgroundColorLocation, 1, &backgroundcolor[0]);
+
+    // Use the shader program for the ground
+    glUseProgram(GroundShaderID);
+
+    modelMatrix = getGroundMatrix();
+
+    // Calculate the Model-View-Projection (MVP) matrix
     glm::mat4 MVP = projection * view * modelMatrix;
 
-    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "MVP"), 1, GL_FALSE, &MVP[0][0]);
+    // Send the MVP matrix to the shader
+    glUniformMatrix4fv(glGetUniformLocation(GroundShaderID, "MVP"), 1, GL_FALSE, &MVP[0][0]);
 
+    // Send the model matrix to the shader (for lighting calculations)
+    glUniformMatrix4fv(glGetUniformLocation(GroundShaderID, "M"), 1, GL_FALSE, &modelMatrix[0][0]);
+
+    // Send the view matrix to the shader
+    glUniformMatrix4fv(glGetUniformLocation(GroundShaderID, "V"), 1, GL_FALSE, &view[0][0]);
+
+    // Use the light class to send light data to the shader
+    directionalLight.sendToShader(GroundShaderID, "dirLight");
+    pointLight.sendToShader(GroundShaderID, "pointLight");
+    spotLight.sendToShader(GroundShaderID, "spotLight");
+
+    // Material color
+    glm::vec3 materialDiffuseColor = glm::vec3(0.8f, 0.8f, 0.8f);  // Light gray diffuse
+    glm::vec3 materialSpecularColor = glm::vec3(1.0f, 1.0f, 1.0f);  // White specular
+    float materialShininess = 35.0f;  // Shiny material
+
+    glUniform3fv(glGetUniformLocation(GroundShaderID, "materialDiffuseColor"), 1, &backgroundcolor[0]);
+    glUniform3fv(glGetUniformLocation(GroundShaderID, "materialSpecularColor"), 1, &materialSpecularColor[0]);
+    glUniform1f(glGetUniformLocation(GroundShaderID, "materialShininess"), materialShininess);
+
+    // Enable directional light
+    glUniform1i(glGetUniformLocation(GroundShaderID, "useDirectionalLight"), true);
+
+    // Enable spotlight
+    glUniform1i(glGetUniformLocation(GroundShaderID, "useSpotLight"), true);
+
+    DrawGround();
+}
+
+void InfiniteGround::DrawGround()
+{
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
+    // Unbind the shader program
+    glUseProgram(0);
 }
 
+
+void InfiniteGround::setupBuffers() {
+    // Generate and bind VAO, VBO, EBO
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
+
+    glBindVertexArray(VAO);
+
+    // Bind and set VBO for position and normal data
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
+
+    // Bind and set EBO for indices
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(quadIndices), quadIndices, GL_STATIC_DRAW);
+
+    // Enable vertex attribute for position (location = 0 in shader)
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    // Enable vertex attribute for normals (location = 1 in shader)
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    // Unbind VAO
+    glBindVertexArray(0);
+}
+
+
+glm::mat4 InfiniteGround::calculateGroundMatrix() const{
+    glm::mat4 groundMatrix = glm::mat4(1.0f);
+    groundMatrix = glm::translate(groundMatrix, glm::vec3(0.0f, getHeight(), 0.0f));
+    return groundMatrix;
+}
+
+glm::mat4 InfiniteGround::getGroundMatrix() const {
+    return calculateGroundMatrix();
+}
+
+float InfiniteGround::getHeight() const{
+    return groundHeight;
+}
 
 void InfiniteGround::setHeight(float height) {
     groundHeight = height;
 
     float groundOffset = 0.001f;
     modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, groundHeight - groundOffset, 0.1f));
+}
+
+void InfiniteGround::setShader(GLuint shaderProgram) {
+    GroundShaderID = shaderProgram;
 }
