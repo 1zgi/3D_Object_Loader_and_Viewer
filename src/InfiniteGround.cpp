@@ -54,6 +54,13 @@ void InfiniteGround::renderGround(const glm::mat4& view, const glm::mat4& projec
     // Send the view matrix to the shader
     glUniformMatrix4fv(glGetUniformLocation(GroundShaderID, "V"), 1, GL_FALSE, &view[0][0]);
 
+
+    // Enable directional light
+    glUniform1i(glGetUniformLocation(GroundShaderID, "useDirectionalLight"), true);
+
+    // Enable spotlight
+    glUniform1i(glGetUniformLocation(GroundShaderID, "useSpotLight"), true);
+
     // Use the light class to send light data to the shader
     directionalLight.sendToShader(GroundShaderID, "dirLight");
     pointLight.sendToShader(GroundShaderID, "pointLight");
@@ -67,12 +74,6 @@ void InfiniteGround::renderGround(const glm::mat4& view, const glm::mat4& projec
     glUniform3fv(glGetUniformLocation(GroundShaderID, "materialDiffuseColor"), 1, &backgroundcolor[0]);
     glUniform3fv(glGetUniformLocation(GroundShaderID, "materialSpecularColor"), 1, &materialSpecularColor[0]);
     glUniform1f(glGetUniformLocation(GroundShaderID, "materialShininess"), materialShininess);
-
-    // Enable directional light
-    glUniform1i(glGetUniformLocation(GroundShaderID, "useDirectionalLight"), true);
-
-    // Enable spotlight
-    glUniform1i(glGetUniformLocation(GroundShaderID, "useSpotLight"), true);
 
     DrawGround();
 }

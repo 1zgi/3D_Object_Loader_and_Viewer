@@ -105,8 +105,8 @@ void Renderer::render(Model& model) {
     // Define your lights (spotlight, directional light, point light)
     Lights directionalLight(LightType::DIRECTIONAL);
     directionalLight.setDirection(glm::vec3(-1.0f, -1.0f, -1.0f));
-    directionalLight.setIntensity(glm::vec3(1.0f, 1.0f, 1.0f));
-    directionalLight.setAmbientIntensity(glm::vec3(0.5f, 0.5f, 0.5f));      // Low ambient light
+    directionalLight.setIntensity(glm::vec3(2.0f, 2.0f, 2.0f));
+    directionalLight.setAmbientIntensity(glm::vec3(0.0f, 0.0f, 0.0f));      // Low ambient light
     directionalLight.setSpecularIntensity(glm::vec3(0.05f, 0.05f, 0.05f)); // White specular light
 
     Lights pointLight(LightType::POINT);
@@ -139,6 +139,12 @@ void Renderer::render(Model& model) {
     glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &Model[0][0]);
     glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &View[0][0]);
 
+    // Enable directional light
+    glUniform1i(glGetUniformLocation(programID, "useDirectionalLight"), true);
+
+    // Enable spotlight
+    glUniform1i(glGetUniformLocation(programID, "useSpotLight"), true);
+
     // Pass the light data to both object and ground shaders
     directionalLight.sendToShader(programID, "dirLight");
     pointLight.sendToShader(programID, "pointLight");
@@ -149,7 +155,13 @@ void Renderer::render(Model& model) {
     glm::vec3 materialDiffuseColor = model.getMaterialDiffuseColor(materialIndex);
     glUniform3fv(glGetUniformLocation(programID, "material.DiffuseColor"), 1, &materialDiffuseColor[0]);
 
+    float materialShininess = 35.0f;  // Shiny material
+    glm::vec3 materialSpecularColor = glm::vec3(1.0f, 1.0f, 1.0f);  // White specular
+
+    glUniform3fv(glGetUniformLocation(programID, "materialSpecularColor"), 1, &materialSpecularColor[0]);
+    glUniform1f(glGetUniformLocation(programID, "materialShininess"), materialShininess);
     // Check if the texture exists and set the useTexture uniform
+
     bool textureAvailable = (model.getTextureID(0) != 0);
     glUniform1i(glGetUniformLocation(programID, "useTexture"), textureAvailable);
 
