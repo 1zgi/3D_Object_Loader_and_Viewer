@@ -97,14 +97,6 @@ vec3 calcSpotLight(SpotLight light, vec3 normal, vec3 viewDir, vec3 fragPos, vec
 void main() {
     vec3 MaterialDiffuseColor;
 
-    // Use the diffuse texture if available, otherwise fallback to the diffuse color
-    if (useTexture) {
-        MaterialDiffuseColor = texture(material.diffuseTexture, UV).rgb;
-        MaterialDiffuseColor = pow(MaterialDiffuseColor, vec3(2.2));  // Gamma correction for sRGB textures
-    } else {
-        MaterialDiffuseColor = material.DiffuseColor;  // Fallback to diffuse color
-    }
-
     // Normalize the normal vector
     vec3 normal = normalize(Normal_cameraspace);
 
@@ -113,6 +105,14 @@ void main() {
 
     // Initialize the final color
     vec3 finalColor = vec3(0.0);
+
+    // Use the diffuse texture if available, otherwise fallback to the diffuse color
+    if (useTexture) {
+        MaterialDiffuseColor = texture(material.diffuseTexture, UV).rgb;
+        MaterialDiffuseColor = pow(MaterialDiffuseColor, vec3(2.2));  // Gamma correction for sRGB textures
+    } else {
+        MaterialDiffuseColor = material.DiffuseColor;  // Fallback to diffuse color
+    }
 
     // Apply directional lights if enabled
     for (int i = 0; i < numDirLights; ++i) {
