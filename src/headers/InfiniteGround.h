@@ -6,6 +6,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "Lights.h"
+#include <vector>
 
 
 class InfiniteGround {
@@ -17,7 +18,12 @@ public:
     void setHeight(float height);
 
     // Render the ground
-    void renderGround(const glm::mat4& view, const glm::mat4& projection, Lights& directionalLight, Lights& pointLight, Lights& spotLight, glm::vec3 backgroundcolor);
+    void renderGround(const glm::mat4& view, const glm::mat4& projection,
+        std::vector<Lights>& directionalLights,
+        std::vector<Lights>& pointLights,
+        std::vector<Lights>& spotLights,
+        glm::vec3 backgroundcolor);
+
     void initGround(GLuint shaderProgram);
 
     void setShader(GLuint shaderProgram);
@@ -34,6 +40,7 @@ private:
 
     GLuint GroundShaderID;
 
+    void renderGroundLights(std::vector<Lights>& directionalLights, std::vector<Lights>& pointLights, std::vector<Lights>& spotLights);
     void setupBuffers();
     glm::mat4 calculateGroundMatrix() const;
 

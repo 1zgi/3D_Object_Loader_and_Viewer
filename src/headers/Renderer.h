@@ -22,16 +22,27 @@ public:
     bool init();
 
     // Render a model
-    void render(Model& model);
+    void renderScene(Model& model);
 
     // Set methods for light and ambient intensity
     void setAmbientLightIntensity(const glm::vec3& intensity);
-    void setLightPosition(const glm::vec3& position);
+
+    // Render function to apply all lights
+    void renderLightsForObject();
 
     // Get methods
     glm::vec3 getAmbientLightIntensity() const;
     Camera& getCamera();
     Window& getWindow();
+
+    // Getter and setter for lights
+    std::vector<Lights>& getPointLights();
+    std::vector<Lights>& getDirectionalLights();
+    std::vector<Lights>& getSpotLights();
+
+    void addPointLight(const Lights& light);
+    void addDirectionalLight(const Lights& light);
+    void addSpotLight(const Lights& light);
 
     // Cleanup resources
     void cleanup();
@@ -42,8 +53,8 @@ private:
     Camera& camera;
 
     // Shader program IDs
-    GLuint programID;
-    GLuint infiniteGroundShader;
+    GLuint programShaderID;// Initialize OpenGL, shaders, and GLEW for obj(model) 
+    GLuint infiniteGroundShaderID;
 
     // Uniform locations for object shader
     GLuint MatrixID;
@@ -52,19 +63,16 @@ private:
     GLuint LightID;
     GLuint AmbientLightID;
 
-
     // Projection matrix for the camera
     glm::mat4 Projection;
 
     // Light properties
-    glm::vec3 lightPos;
-    glm::vec3 lightIntensity;
     glm::vec3 ambientLightIntensity;
 
-    // Directional light control variables
-    glm::vec3 dirLightColor;
-    glm::vec3 dirLightDirection;
-    glm::vec3 dirLightIntensity;
+    //Lights
+    std::vector<Lights> pointLights;        // Store multiple point lights
+    std::vector<Lights> directionalLights;  // Store multiple directional lights
+    std::vector<Lights> spotLights;         // Store multiple spot lights
 
     // VAO and VBO for object rendering
     GLuint vao;
@@ -76,6 +84,13 @@ private:
     // Helper flags
     bool positionPrinted;      // To print position once
     bool groundHeightSet;      // Track whether the ground height is set
+
+    void setupMaterialsForObject(Model& model);
+
+    //Default Scene Lights Setup
+    void setupPointLight();
+    void setupDirectionalLight();
+    void setupSpotLight();
 };
 
 #endif // RENDERER_H

@@ -218,39 +218,6 @@ void Model::setupBuffers() {
     glBindVertexArray(0); // Unbind the VAO
 }
 
-// Efficiently calculates the lowest point (y-coordinate) of the model
-float Model::getLowestPoint() const {
-    if (needsLowestPointUpdate) {
-        updateLowestPoint();
-    }
-    return lowestPoint;
-}
-
-void Model::updateLowestPoint() const{
-    // Only recalculate if transformations have changed
-    if (!needsLowestPointUpdate) {
-        return;
-    }
-
-    float minY = std::numeric_limits<float>::max();
-
-    for (size_t i = 0; i < vertices.size() / 3; i++) {
-        glm::vec3 vertex(vertices[3 * i], vertices[3 * i + 1], vertices[3 * i + 2]);
-
-        // Apply model transformations to the vertex
-        glm::vec4 transformedVertex = getModelMatrix() * glm::vec4(vertex, 1.0f);
-
-        // Check for the minimum Y value after transformation
-        if (transformedVertex.y < minY) {
-            minY = transformedVertex.y;
-        }
-    }
-
-    lowestPoint = minY;
-    needsLowestPointUpdate = false;  // Reset the flag after updating
-}
-
-
 // Transformation matrix calculation
 glm::mat4 Model::calculateModelMatrix() const {
     glm::mat4 translation = glm::translate(glm::mat4(1.0f), position);
@@ -318,7 +285,38 @@ glm::mat4 Model::getModelMatrix() const {
     return calculateModelMatrix();
 }
 
-// Method to get the diffuse texture ID
+// Efficiently calculates the lowest point (y-coordinate) of the model
+float Model::getLowestPoint() const {
+    if (needsLowestPointUpdate) {
+        updateLowestPoint();
+    }
+    return lowestPoint;
+}
+
+void Model::updateLowestPoint() const {
+    // Only recalculate if transformations have changed
+    if (!needsLowestPointUpdate) {
+        return;
+    }
+
+    float minY = std::numeric_limits<float>::max();
+
+    for (size_t i = 0; i < vertices.size() / 3; i++) {
+        glm::vec3 vertex(vertices[3 * i], vertices[3 * i + 1], vertices[3 * i + 2]);
+
+        // Apply model transformations to the vertex
+        glm::vec4 transformedVertex = getModelMatrix() * glm::vec4(vertex, 1.0f);
+
+        // Check for the minimum Y value after transformation
+        if (transformedVertex.y < minY) {
+            minY = transformedVertex.y;
+        }
+    }
+
+    lowestPoint = minY;
+    needsLowestPointUpdate = false;  // Reset the flag after updating
+}
+
 GLuint Model::getTextureID(size_t materialIndex) const {
     if (materialIndex < textures.size()) {
         return textures[materialIndex];
@@ -326,7 +324,6 @@ GLuint Model::getTextureID(size_t materialIndex) const {
     return 0; // Return 0 if the index is out of bounds or no texture is assigned
 }
 
-// Method to get the specular texture ID
 GLuint Model::getSpecularTextureID(size_t materialIndex) const {
     if (materialIndex < specularTextures.size()) {
         return specularTextures[materialIndex];

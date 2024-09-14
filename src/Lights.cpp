@@ -42,7 +42,6 @@ void Lights::setOuterCutOff(float outerC) {
     outerCutOff = glm::cos(glm::radians(outerC));
 }
 
-
 void Lights::sendToShader(GLuint programID, const std::string& lightName) {
     std::string lightPrefix = lightName + ".";
 
@@ -81,27 +80,37 @@ void Lights::sendToShader(GLuint programID, const std::string& lightName) {
     }
 }
 
-// Getter for Position
+void Lights::enableDirectionalLights(GLuint programID,int i)
+{
+    glUniform1i(glGetUniformLocation(programID, ("useDirectionalLight[" + std::to_string(i) + "]").c_str()), true);
+}
+
+void Lights::enableSpotLights(GLuint programID, int i)
+{
+    glUniform1i(glGetUniformLocation(programID, ("useSpotLight[" + std::to_string(i) + "]").c_str()), true);
+}
+
+void Lights::enablePointLights(GLuint programID, int i)
+{
+    glUniform1i(glGetUniformLocation(programID, ("usePointLight[" + std::to_string(i) + "]").c_str()), true);
+}
+
 glm::vec3 Lights::getPosition() const {
     return position;
 }
 
-// Getter for Direction
 glm::vec3 Lights::getDirection() const {
     return direction;
 }
 
-// Getter for Intensity
 glm::vec3 Lights::getIntensity() const {
     return intensity;
 }
 
-// Getter for Ambient Intensity
 glm::vec3 Lights::getAmbientIntensity() const {
     return ambientIntensity;
 }
 
-// Getter for Specular Intensity
 glm::vec3 Lights::getSpecularIntensity() const {
     return specularIntensity;
 }
@@ -130,3 +139,4 @@ float Lights::getCutOff() const {
 float Lights::getOuterCutOff() const {
     return outerCutOff;
 }
+

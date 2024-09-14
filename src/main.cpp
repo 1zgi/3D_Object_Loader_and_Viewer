@@ -22,7 +22,7 @@ int main(int argc, char* args[]) {
         return -1;
     }
 
-    Model model("models/obj/monster.obj");
+    Model model("models/obj/Earth.obj");
 
     bool running = true;
     bool mouseCapturedByImGui = false;
@@ -89,7 +89,7 @@ int main(int argc, char* args[]) {
         const Uint8* state = SDL_GetKeyboardState(NULL);
 
         // Render the model with the renderer
-        renderer.render(model);
+        renderer.renderScene(model);
 
         // Run ImGui interface
         imguiApp.Run(&renderer, &model);

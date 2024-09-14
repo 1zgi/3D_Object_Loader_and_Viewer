@@ -25,23 +25,29 @@ struct SpotLight {
     float Quadratic;
 };
 
-// Uniform variables for the light and material
-uniform DirectionalLight dirLight;
-uniform SpotLight spotLight;
+// Maximum number of lights
+const int MAX_LIGHTS = 4;
 
-uniform bool useDirectionalLight;  // Flag to enable/disable directional light
-uniform bool useSpotLight;         // Flag to enable/disable spotlight
+// Arrays of lights
+uniform DirectionalLight dirLights[MAX_LIGHTS];
+uniform SpotLight spotLights[MAX_LIGHTS];
 
-uniform vec3 materialDiffuseColor;  // Material diffuse color
-uniform vec3 materialSpecularColor; // Material specular color
+// Number of active lights
+uniform int numDirLights;  
+uniform int numSpotLights;
+
+uniform vec3 materialDiffuseColor;
+uniform vec3 materialSpecularColor;
 uniform float materialShininess;
+uniform vec3 viewPos;
 
-uniform vec3 viewPos;               // Camera position
+uniform bool useSpotLight[MAX_LIGHTS];           // Toggle for each spotlight
+uniform bool useDirectionalLight[MAX_LIGHTS];    // Toggle for each directional light
 
 // Function to calculate directional light contribution
 vec3 calcDirLight(DirectionalLight light, vec3 normal, vec3 viewDir) {
     vec3 lightDir = normalize(-light.Direction);
-
+    
     // Diffuse shading
     float diff = max(dot(normal, lightDir), 0.0);
     vec3 diffuse = light.Intensity * diff * materialDiffuseColor;
@@ -88,25 +94,25 @@ vec3 calcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir) {
 }
 
 void main() {
-    // Normalize the normal vector
     vec3 normal = normalize(Normal_cameraspace);
-
-    // View direction (from fragment to camera)
     vec3 viewDir = normalize(viewPos - FragPos_worldspace);
-
-    // Initialize the final color
     vec3 result = vec3(0.0);
 
-    // Apply directional light if enabled
-    if (useDirectionalLight) {
-        result += calcDirLight(dirLight, normal, viewDir);
+    // Apply all directional lights
+    for (int i = 0; i < numDirLights; i++) {
+        if (useDirectionalLight[i]) {
+            result += calcDirLight(dirLights[i], normal, viewDir);
+        }
     }
 
-    // Apply spotlight if enabled
-    if (useSpotLight) {
-        result += calcSpotLight(spotLight, normal, FragPos_worldspace, viewDir);
+    // Apply all spotlights
+    for (int i = 0; i < numSpotLights; i++) {
+        if (useSpotLight[i]) {
+            result += calcSpotLight(spotLights[i], normal, FragPos_worldspace, viewDir);
+        }
     }
 
-    // Set final fragment color
+    // Set the final fragment color
     FragColor = vec4(result, 1.0);
 }
+

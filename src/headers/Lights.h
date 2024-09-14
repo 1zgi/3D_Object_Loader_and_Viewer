@@ -5,12 +5,14 @@
 #include <glm/glm.hpp>
 #include <GL/glew.h>
 #include <string>
+#include <vector>
 
 // Types of lights
 enum class LightType {
     DIRECTIONAL,
     POINT,
-    SPOT
+    SPOT,
+    DEFAULT
 };
 
 class Lights {
@@ -43,6 +45,10 @@ public:
 
     // Send the light properties to the shader
     void sendToShader(GLuint programID, const std::string& lightName);
+
+    void enableDirectionalLights(GLuint programID, int i);
+    void enablePointLights(GLuint programID, int i);
+    void enableSpotLights(GLuint programID, int i);
 
 private:
     LightType type;

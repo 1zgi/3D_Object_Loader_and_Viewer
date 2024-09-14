@@ -1,5 +1,8 @@
 #version 410 core
 
+// Define the maximum number of directional and spotlights
+#define MAX_LIGHTS 4
+
 in vec3 Position_worldspace;
 in vec3 Normal_cameraspace;
 in vec3 EyeDirection_cameraspace;
@@ -9,6 +12,7 @@ struct Material {
     vec3 AmbientColor;
     vec3 DiffuseColor;
     vec3 SpecularColor;
+    float Shininess;
     sampler2D diffuseTexture;
     sampler2D specularTexture;
 };
@@ -31,13 +35,16 @@ struct SpotLight {
 };
 
 uniform Material material;
-uniform SpotLight spotLight;
-uniform DirectionalLight dirLight;
+uniform DirectionalLight dirLights[MAX_LIGHTS]; // Array for multiple directional lights
+uniform SpotLight spotLights[MAX_LIGHTS];       // Array for multiple spotlights
+uniform int numDirLights;                       // Number of active directional lights
+uniform int numSpotLights;                      // Number of active spotlights
+
 uniform vec3 AmbientLightIntensity;
 
-uniform bool useSpotLight;           // Toggle for spotlight
-uniform bool useDirectionalLight;    // Toggle for directional light
-uniform bool useTexture;             // Check if we should use the texture
+uniform bool useSpotLight[MAX_LIGHTS];           // Toggle for each spotlight
+uniform bool useDirectionalLight[MAX_LIGHTS];    // Toggle for each directional light
+uniform bool useTexture;                         // Check if we should use the texture
 
 out vec4 color;
 
@@ -51,8 +58,8 @@ vec3 calcDirLight(DirectionalLight light, vec3 normal, vec3 viewDir, vec3 Materi
 
     // Specular shading (Phong reflection model)
     vec3 reflectDir = reflect(-lightDir, normal);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 64.0);
-    vec3 specular = light.Intensity * spec * material.SpecularColor;  // Use light's Intensity for specular calculations
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.Shininess);
+    vec3 specular = light.Intensity * spec * material.SpecularColor;
 
     // Ambient shading
     vec3 ambient = light.Ambient * MaterialDiffuseColor;
@@ -80,7 +87,7 @@ vec3 calcSpotLight(SpotLight light, vec3 normal, vec3 viewDir, vec3 fragPos, vec
 
     // Specular reflection (Phong reflection model)
     vec3 reflectDir = reflect(-toLight, normal);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 64.0);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.Shininess);
     vec3 specular = light.Intensity * spec * material.SpecularColor * intensity * attenuation;
 
     // Combine diffuse and specular
@@ -107,14 +114,18 @@ void main() {
     // Initialize the final color
     vec3 finalColor = vec3(0.0);
 
-    // Apply directional light if enabled
-    if (useDirectionalLight) {
-        finalColor += calcDirLight(dirLight, normal, viewDir, MaterialDiffuseColor);
+    // Apply directional lights if enabled
+    for (int i = 0; i < numDirLights; ++i) {
+        if (useDirectionalLight[i]) {
+            finalColor += calcDirLight(dirLights[i], normal, viewDir, MaterialDiffuseColor);
+        }
     }
 
-    // Apply spotlight if enabled
-    if (useSpotLight) {
-        finalColor += calcSpotLight(spotLight, normal, viewDir, Position_worldspace, MaterialDiffuseColor);
+    // Apply spotlights if enabled
+    for (int i = 0; i < numSpotLights; ++i) {
+        if (useSpotLight[i]) {
+            finalColor += calcSpotLight(spotLights[i], normal, viewDir, Position_worldspace, MaterialDiffuseColor);
+        }
     }
 
     // Ambient lighting from the global ambient intensity

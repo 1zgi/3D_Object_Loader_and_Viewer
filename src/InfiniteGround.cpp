@@ -1,7 +1,7 @@
 #include "headers/InfiniteGround.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <GL/glew.h>
-#include <iostream>  // For debugging
+#include <iostream>
 
 // Vertices (position + normal) for a simple quad ground plane
 float quadVertices[] = {
@@ -32,8 +32,12 @@ void InfiniteGround::initGround(GLuint shaderProgram) {
     setupBuffers();
 }
 
-void InfiniteGround::renderGround(const glm::mat4& view, const glm::mat4& projection, Lights& directionalLight, Lights& pointLight, Lights& spotLight, glm::vec3 backgroundcolor) {
-
+void InfiniteGround::renderGround(const glm::mat4& view, const glm::mat4& projection,
+    std::vector<Lights>& directionalLights,
+    std::vector<Lights>& pointLights,
+    std::vector<Lights>& spotLights,
+    glm::vec3 backgroundcolor) 
+{
     GLuint backgroundColorLocation = glGetUniformLocation(GroundShaderID, "backgroundColor");
     glUniform3fv(backgroundColorLocation, 1, &backgroundcolor[0]);
 
@@ -54,17 +58,7 @@ void InfiniteGround::renderGround(const glm::mat4& view, const glm::mat4& projec
     // Send the view matrix to the shader
     glUniformMatrix4fv(glGetUniformLocation(GroundShaderID, "V"), 1, GL_FALSE, &view[0][0]);
 
-
-    // Enable directional light
-    glUniform1i(glGetUniformLocation(GroundShaderID, "useDirectionalLight"), true);
-
-    // Enable spotlight
-    glUniform1i(glGetUniformLocation(GroundShaderID, "useSpotLight"), true);
-
-    // Use the light class to send light data to the shader
-    directionalLight.sendToShader(GroundShaderID, "dirLight");
-    pointLight.sendToShader(GroundShaderID, "pointLight");
-    spotLight.sendToShader(GroundShaderID, "spotLight");
+    renderGroundLights(directionalLights, pointLights, spotLights);
 
     // Material color
     glm::vec3 materialDiffuseColor = glm::vec3(0.8f, 0.8f, 0.8f);  // Light gray diffuse
@@ -78,6 +72,34 @@ void InfiniteGround::renderGround(const glm::mat4& view, const glm::mat4& projec
     DrawGround();
 }
 
+void InfiniteGround::renderGroundLights(std::vector<Lights>& directionalLights, std::vector<Lights>& pointLights, std::vector<Lights>& spotLights)
+{
+    // Send the number of directional and spotlights to the shader
+    glUniform1i(glGetUniformLocation(GroundShaderID, "numDirLights"), static_cast<GLint>(directionalLights.size()));
+    glUniform1i(glGetUniformLocation(GroundShaderID, "numSpotLights"), static_cast<GLint>(spotLights.size()));
+
+    // Pass all directional lights to the shader
+    for (int i = 0; i < static_cast<GLint>(directionalLights.size()); ++i) {
+        directionalLights[i].sendToShader(GroundShaderID, "dirLights[" + std::to_string(i) + "]");
+
+        directionalLights[i].enableDirectionalLights(GroundShaderID, i);
+    }
+
+    // Pass all spotlights to the shader
+    for (int i = 0; i < static_cast<GLint>(spotLights.size()); ++i) {
+        spotLights[i].sendToShader(GroundShaderID, "spotLights[" + std::to_string(i) + "]");
+
+        spotLights[i].enableSpotLights(GroundShaderID, i);
+    }
+
+    // Pass all point lights to the shader
+    for (int i = 0; i < pointLights.size(); ++i) {
+        pointLights[i].sendToShader(GroundShaderID, "pointLights[" + std::to_string(i) + "]");
+
+        //Enable point light
+    }
+}
+
 void InfiniteGround::DrawGround()
 {
     glBindVertexArray(VAO);
@@ -86,7 +108,6 @@ void InfiniteGround::DrawGround()
     // Unbind the shader program
     glUseProgram(0);
 }
-
 
 void InfiniteGround::setupBuffers() {
     // Generate and bind VAO, VBO, EBO
@@ -115,7 +136,6 @@ void InfiniteGround::setupBuffers() {
     // Unbind VAO
     glBindVertexArray(0);
 }
-
 
 glm::mat4 InfiniteGround::calculateGroundMatrix() const{
     glm::mat4 groundMatrix = glm::mat4(1.0f);
