@@ -373,12 +373,12 @@ std::vector<MaterialData> Model::getModelMaterials() const {
 
             // Use the material's specular color, but fallback to white if not properly defined
             data.specularColor = glm::vec3(materials[i].specular[0], materials[i].specular[1], materials[i].specular[2]);
-            data.shininess = (materials[i].shininess > 0.0f) ? materials[i].shininess : 32.0f;
+            data.shininess = (materials[i].shininess > 0.0f) ? materials[i].shininess : 64.0f;
         }
         else {
             data.specularTextureID = 0;  // No specular texture assigned
-            data.specularColor = glm::vec3(1.0f, 1.0f, 1.0f);  // Default to white specular color
-            data.shininess = 32.0f;  // Default shininess if none is set
+            data.specularColor = glm::vec3(0.5f, 0.5f, 0.5f);  // Default to white specular color
+            data.shininess = 64.0f;  // Default shininess if none is set
         }
 
         materialsData.push_back(data);
@@ -386,8 +386,6 @@ std::vector<MaterialData> Model::getModelMaterials() const {
 
     return materialsData;
 }
-
-
 
 glm::mat4 Model::getModelMatrix() const {
     return calculateModelMatrix();
