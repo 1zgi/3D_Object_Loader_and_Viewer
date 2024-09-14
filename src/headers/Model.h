@@ -11,6 +11,15 @@
 #include "tiny_obj_loader.h"
 #include "shader.hpp"
 
+struct MaterialData {
+    glm::vec3 diffuseColor;
+    glm::vec3 specularColor;
+    float shininess;
+    GLuint diffuseTextureID;
+    GLuint specularTextureID;
+};
+
+
 class Model {
 public:
     // Constructor: Loads a model from the given OBJ file
@@ -45,6 +54,14 @@ public:
 
     // Gets the diffuse color from the material if no texture is available
     glm::vec3 getMaterialDiffuseColor(size_t materialIndex) const;
+
+    std::vector<MaterialData> getModelMaterials() const;
+
+    GLuint getVAO() const;
+
+    const std::vector<unsigned int>& getIndices() const;
+
+    const std::vector<int>& getFaceMaterialIDs() const;
 
     // Calculates and returns the lowest point (Y-coordinate) of the model
     float getLowestPoint() const;

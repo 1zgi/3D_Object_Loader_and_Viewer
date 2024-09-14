@@ -241,37 +241,100 @@ void Model::calculateBoundingBox(glm::vec3& min, glm::vec3& max) const { //Fits 
 
 // Method to render the model
 void Model::draw(GLuint programID) const {
+    // Bind the VAO for the model
     glBindVertexArray(vao);
 
-    size_t indexOffset = 0;
-    for (size_t i = 0; i < face_material_ids.size(); i++) {
-        int material_id = face_material_ids[i];
+    // Retrieve the indices and face material IDs
+    const std::vector<unsigned int>& modelIndices = getIndices();
+    const std::vector<int>& materialIDs = getFaceMaterialIDs();
 
-        // Check if a texture exists for this material and bind it
-        if (material_id >= 0 && material_id < textures.size() && textures[material_id] != 0) {
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, textures[material_id]);
-            glUniform1i(glGetUniformLocation(programID, "useTexture"), 1);  // Tell the shader to use the texture
+    // Retrieve the model materials
+    const std::vector<MaterialData>& materialsData = getModelMaterials();
+
+    GLuint currentTextureID = 0;  // Track the current bound texture to avoid redundant binding
+    glm::vec3 currentDiffuseColor = glm::vec3(-1.0f);  // Start with invalid color to force first update
+    glm::vec3 currentSpecularColor = glm::vec3(-1.0f); // Start with invalid specular color
+    float currentShininess = -1.0f;  // Invalid shininess to force first update
+
+    size_t indexOffset = 0;  // Offset for the indices
+    size_t faceStart = 0;    // To batch faces that share the same material
+
+    // Iterate over each material group
+    for (size_t i = 0; i < materialIDs.size(); ++i) {
+        int materialID = materialIDs[i];
+
+        // Ensure the material ID is valid
+        if (materialID >= 0 && materialID < materialsData.size()) {
+            const MaterialData& mat = materialsData[materialID];
+
+            // If the material has a texture and it's different from the current texture, bind it
+            if (mat.diffuseTextureID != 0 && mat.diffuseTextureID != currentTextureID) {
+                glActiveTexture(GL_TEXTURE0);
+                glBindTexture(GL_TEXTURE_2D, mat.diffuseTextureID);
+                glUniform1i(glGetUniformLocation(programID, "useTexture"), 1);  // Use the texture
+                currentTextureID = mat.diffuseTextureID;
+            }
+            // If there's no texture, use the diffuse color
+            else if (mat.diffuseTextureID == 0) {
+                if (currentTextureID != 0) {
+                    glBindTexture(GL_TEXTURE_2D, 0);  // Unbind texture if previously bound
+                    glUniform1i(glGetUniformLocation(programID, "useTexture"), 0);  // Use diffuse color instead of texture
+                    currentTextureID = 0;
+                }
+
+                // Set the diffuse color in the shader if it has changed
+                if (mat.diffuseColor != currentDiffuseColor) {
+                    glUniform3fv(glGetUniformLocation(programID, "material.DiffuseColor"), 1, &mat.diffuseColor[0]);
+                    currentDiffuseColor = mat.diffuseColor;
+                }
+            }
+
+            // Set specular color and shininess only if they have changed
+            if (mat.specularColor != currentSpecularColor) {
+                glUniform3fv(glGetUniformLocation(programID, "material.SpecularColor"), 1, &mat.specularColor[0]);
+                currentSpecularColor = mat.specularColor;
+            }
+
+            if (mat.shininess != currentShininess) {
+                glUniform1f(glGetUniformLocation(programID, "material.Shininess"), mat.shininess);
+                currentShininess = mat.shininess;
+            }
+
+            // Check if the next face has a different material ID to batch the draw calls
+            if (i + 1 == materialIDs.size() || materialIDs[i + 1] != materialID) {
+                // Draw all faces that use the same material in a single draw call
+                size_t numFaces = (i + 1 - faceStart) * 3;  // Number of vertices for this material group
+
+                // Instead of passing size_t directly, cast it to GLsizei
+                glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(numFaces), GL_UNSIGNED_INT, (void*)(indexOffset * sizeof(unsigned int)));
+
+                // Update the index offset and face start position
+                indexOffset += numFaces;
+                faceStart = i + 1;
+            }
         }
-        else {
-            glBindTexture(GL_TEXTURE_2D, 0);  // Unbind texture (use diffuse color instead)
-            glUniform1i(glGetUniformLocation(programID, "useTexture"), 0);  // Tell the shader to use the diffuse color
-
-            // Set the material's diffuse color
-            glm::vec3 diffuseColor = getMaterialDiffuseColor(material_id);
-            glUniform3fv(glGetUniformLocation(programID, "material.DiffuseColor"), 1, &diffuseColor[0]);
-        }
-
-        // Draw the face
-        glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, (void*)(indexOffset * sizeof(unsigned int)));
-        indexOffset += 3;
     }
 
+    // Unbind the VAO
     glBindVertexArray(0);
 }
 
 bool Model::isLowestPointUpdateNeeded() const {
     return needsLowestPointUpdate;
+}
+
+GLuint Model::getVAO() const {
+    return vao;
+}
+
+// Get the indices of the model
+const std::vector<unsigned int>& Model::getIndices() const {
+    return indices;
+}
+
+// Get the material IDs for each face
+const std::vector<int>& Model::getFaceMaterialIDs() const {
+    return face_material_ids;
 }
 
 glm::vec3 Model::getMaterialDiffuseColor(size_t materialIndex) const {
@@ -280,6 +343,51 @@ glm::vec3 Model::getMaterialDiffuseColor(size_t materialIndex) const {
     }
     return glm::vec3(1.0f, 1.0f, 1.0f);  // Return white if index is out of bounds
 }
+
+std::vector<MaterialData> Model::getModelMaterials() const {
+    std::vector<MaterialData> materialsData;
+
+    for (size_t i = 0; i < materials.size(); i++) {
+        MaterialData data;
+
+        // Set diffuse texture ID if available
+        if (i < textures.size() && textures[i] != 0) {
+            data.diffuseTextureID = textures[i];
+
+            // Use the material's diffuse color, but fallback to white if not properly defined
+            data.diffuseColor = glm::vec3(materials[i].diffuse[0], materials[i].diffuse[1], materials[i].diffuse[2]);
+        }
+        else {
+            data.diffuseTextureID = 0;  // No texture assigned, use diffuse color instead
+            data.diffuseColor = glm::vec3(materials[i].diffuse[0], materials[i].diffuse[1], materials[i].diffuse[2]);
+
+            // If the diffuse color in material is zero (default case), fallback to white
+            if (data.diffuseColor == glm::vec3(0.0f, 0.0f, 0.0f)) {
+                data.diffuseColor = glm::vec3(1.0f, 1.0f, 1.0f);  // Default to white color
+            }
+        }
+
+        // Set specular texture ID if available
+        if (i < specularTextures.size() && specularTextures[i] != 0) {
+            data.specularTextureID = specularTextures[i];
+
+            // Use the material's specular color, but fallback to white if not properly defined
+            data.specularColor = glm::vec3(materials[i].specular[0], materials[i].specular[1], materials[i].specular[2]);
+            data.shininess = (materials[i].shininess > 0.0f) ? materials[i].shininess : 32.0f;
+        }
+        else {
+            data.specularTextureID = 0;  // No specular texture assigned
+            data.specularColor = glm::vec3(1.0f, 1.0f, 1.0f);  // Default to white specular color
+            data.shininess = 32.0f;  // Default shininess if none is set
+        }
+
+        materialsData.push_back(data);
+    }
+
+    return materialsData;
+}
+
+
 
 glm::mat4 Model::getModelMatrix() const {
     return calculateModelMatrix();
