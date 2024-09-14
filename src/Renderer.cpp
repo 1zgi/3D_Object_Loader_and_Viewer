@@ -1,4 +1,5 @@
 #include "headers/Renderer.h"
+#include <unordered_map>
 
 Renderer::Renderer(Window& window, Camera& camera)
     : window(window),
@@ -120,8 +121,6 @@ void Renderer::renderScene(Model& model) {
     // Render the model
     model.draw(programShaderID);
 
-    setupMaterialsForObject(model);
-
     model.updateLowestPoint();  // Update the lowest point of the model
 
     // Check for OpenGL errors
@@ -158,26 +157,6 @@ void Renderer::renderLightsForObject() {
         pointLights[i].sendToShader(programShaderID, "pointLights[" + std::to_string(i) + "]");
 
         //Enable point light
-    }
-}
-
-void Renderer::setupMaterialsForObject(Model& model)
-{
-    float materialShininess = 64.0f;  // Shiny material
-    glm::vec3 materialSpecularColor = glm::vec3(1.0f, 1.0f, 1.0f);  // White specular
-
-    glUniform3fv(glGetUniformLocation(programShaderID, "material.SpecularColor"), 1, &materialSpecularColor[0]);
-    glUniform1f(glGetUniformLocation(programShaderID, "material.Shininess"), materialShininess);
-
-    // Check if the texture exists and set the useTexture uniform
-    bool textureAvailable = (model.getTextureID(0) != 0);
-    glUniform1i(glGetUniformLocation(programShaderID, "useTexture"), textureAvailable);
-
-    // Bind the diffuse texture if it exists
-    if (textureAvailable) {
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, model.getTextureID(0));
-        glUniform1i(glGetUniformLocation(programShaderID, "material.diffuseTexture"), 0);
     }
 }
 

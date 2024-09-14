@@ -85,8 +85,6 @@ private:
     bool positionPrinted;      // To print position once
     bool groundHeightSet;      // Track whether the ground height is set
 
-    void setupMaterialsForObject(Model& model);
-
     //Default Scene Lights Setup
     void setupPointLight();
     void setupDirectionalLight();
