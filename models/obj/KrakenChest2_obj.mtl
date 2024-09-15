@@ -1,8 +1,8 @@
 # Blender 4.1.1 MTL File: 'None'
 # www.blender.org
 
-newmtl Chest
-Ns 0.000000
+newmtl Chest.001
+Ns 1000.000000
 Ka 1.000000 1.000000 1.000000
 Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000
@@ -11,8 +11,8 @@ d 1.000000
 illum 2
 map_Kd D:/ctrlrings/3D_Object_Loader_and_Viewer/3D_Object_Loader_and_Viewer/models/TexturesKreaken/KrakenChest2_obj_Chest_BaseColor.png
 
-newmtl Stairs
-Ns 0.000000
+newmtl Stairs.001
+Ns 1000.000000
 Ka 1.000000 1.000000 1.000000
 Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000
@@ -21,8 +21,8 @@ d 1.000000
 illum 2
 map_Kd D:/ctrlrings/3D_Object_Loader_and_Viewer/3D_Object_Loader_and_Viewer/models/TexturesKreaken/KrakenChest2_obj_Stairs_BaseColor.png
 
-newmtl cannons
-Ns 0.000000
+newmtl cannons.001
+Ns 1000.000000
 Ka 1.000000 1.000000 1.000000
 Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000
@@ -31,8 +31,8 @@ d 1.000000
 illum 2
 map_Kd D:/ctrlrings/3D_Object_Loader_and_Viewer/3D_Object_Loader_and_Viewer/models/TexturesKreaken/KrakenChest2_obj_cannons_BaseColor.png
 
-newmtl hinges
-Ns 0.000000
+newmtl hinges.001
+Ns 1000.000000
 Ka 1.000000 1.000000 1.000000
 Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000
@@ -41,8 +41,8 @@ d 1.000000
 illum 2
 map_Kd D:/ctrlrings/3D_Object_Loader_and_Viewer/3D_Object_Loader_and_Viewer/models/TexturesKreaken/KrakenChest2_obj_hinges_BaseColor.png
 
-newmtl kraken_fancy
-Ns 0.000000
+newmtl kraken_fancy.001
+Ns 1000.000000
 Ka 1.000000 1.000000 1.000000
 Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000
@@ -51,8 +51,8 @@ d 1.000000
 illum 2
 map_Kd D:/ctrlrings/3D_Object_Loader_and_Viewer/3D_Object_Loader_and_Viewer/models/TexturesKreaken/KrakenChest2_obj_kraken_fancy_BaseColor.png
 
-newmtl ship
-Ns 0.000000
+newmtl ship.001
+Ns 1000.000000
 Ka 1.000000 1.000000 1.000000
 Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000
@@ -61,8 +61,8 @@ d 1.000000
 illum 2
 map_Kd D:/ctrlrings/3D_Object_Loader_and_Viewer/3D_Object_Loader_and_Viewer/models/TexturesKreaken/KrakenChest2_obj_ship_BaseColor.png
 
-newmtl tentacles
-Ns 0.000000
+newmtl tentacles.001
+Ns 893.884277
 Ka 1.000000 1.000000 1.000000
 Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000

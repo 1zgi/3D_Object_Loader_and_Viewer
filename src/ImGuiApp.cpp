@@ -51,11 +51,8 @@ void ImGuiApp::Run(Renderer* renderer, Model* model) {
     }
     ImGui::End();
 
-   // Update the light position in the renderer
-   renderer->setLightPosition(lightPosition);
-
    // Render your scene
-   renderer->render(*model);
+   renderer->renderScene(*model);
 
    // Rendering ImGui
    ImGui::Render();

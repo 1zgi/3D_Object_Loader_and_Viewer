@@ -4,6 +4,36 @@
 #include <fstream>
 #include <sstream>
 
+// Function to check shader compilation errors
+void checkShaderCompilation(GLuint shaderID) {
+    GLint result = GL_FALSE;
+    int logLength;
+
+    // Check shader compilation status
+    glGetShaderiv(shaderID, GL_COMPILE_STATUS, &result);
+    if (result == GL_FALSE) {
+        glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &logLength);
+        std::vector<char> errorMessage(logLength + 1);
+        glGetShaderInfoLog(shaderID, logLength, NULL, &errorMessage[0]);
+        std::cerr << "Shader Compilation Error: " << &errorMessage[0] << std::endl;
+    }
+}
+
+// Function to check shader program linking errors
+void checkProgramLinking(GLuint programID) {
+    GLint result = GL_FALSE;
+    int logLength;
+
+    // Check program linking status
+    glGetProgramiv(programID, GL_LINK_STATUS, &result);
+    if (result == GL_FALSE) {
+        glGetProgramiv(programID, GL_INFO_LOG_LENGTH, &logLength);
+        std::vector<char> errorMessage(logLength + 1);
+        glGetProgramInfoLog(programID, logLength, NULL, &errorMessage[0]);
+        std::cerr << "Program Linking Error: " << &errorMessage[0] << std::endl;
+    }
+}
+
 GLuint LoadShaders(const char* vertex_file_path, const char* fragment_file_path) {
     // Create shaders
     GLuint VertexShaderID = glCreateShader(GL_VERTEX_SHADER);
