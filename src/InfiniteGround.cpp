@@ -61,7 +61,6 @@ void InfiniteGround::renderGround(const glm::mat4& view, const glm::mat4& projec
     renderGroundLights(directionalLights, pointLights, spotLights);
 
     // Material color
-    glm::vec3 materialDiffuseColor = glm::vec3(0.8f, 0.8f, 0.8f);  // Light gray diffuse
     glm::vec3 materialSpecularColor = glm::vec3(1.0f, 1.0f, 1.0f);  // White specular
     float materialShininess = 35.0f;  // Shiny material
 

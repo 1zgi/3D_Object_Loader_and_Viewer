@@ -139,4 +139,3 @@ float Lights::getCutOff() const {
 float Lights::getOuterCutOff() const {
     return outerCutOff;
 }
-

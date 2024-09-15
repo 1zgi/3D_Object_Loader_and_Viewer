@@ -27,6 +27,7 @@ struct SpotLight {
     vec3 Position;
     vec3 Direction;
     vec3 Intensity;
+    vec3 Ambient;
     float CutOff;
     float OuterCutOff;
     float Constant;
@@ -77,6 +78,9 @@ vec3 calcSpotLight(SpotLight light, vec3 normal, vec3 viewDir, vec3 fragPos, vec
     float epsilon = light.CutOff - light.OuterCutOff;
     float intensity = clamp((theta - light.OuterCutOff) / epsilon, 0.0, 1.0);
 
+    // Ambient shading
+    vec3 ambient = light.Ambient * MaterialDiffuseColor;
+
     // Attenuation based on distance
     float distance = length(light.Position - fragPos);
     float attenuation = 1.0 / (light.Constant + light.Linear * distance + light.Quadratic * (distance * distance));
@@ -91,7 +95,7 @@ vec3 calcSpotLight(SpotLight light, vec3 normal, vec3 viewDir, vec3 fragPos, vec
     vec3 specular = light.Intensity * spec * material.SpecularColor * intensity * attenuation;
 
     // Combine diffuse and specular
-    return diffuse + specular;
+    return ambient + diffuse + specular;
 }
 
 void main() {
