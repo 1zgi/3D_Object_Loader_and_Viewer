@@ -28,6 +28,9 @@ public:
     // Destructor: Cleans up allocated resources
     ~Model();
 
+    // Reload a new model at runtime
+    bool reloadModel(const std::string& filepath);
+
     // Renders the model
     void draw(GLuint programID) const;
 
@@ -72,7 +75,15 @@ public:
     // Getter for checking if the lowest point needs to be updated
     bool isLowestPointUpdateNeeded() const;
 
+    // Get current model file path and info
+    const std::string& getCurrentFilePath() const;
+    size_t getVertexCount() const;
+    size_t getFaceCount() const;
+
 private:
+    // Cleans up all OpenGL resources (called by destructor and reloadModel)
+    void cleanup();
+
     // Loads the model from an OBJ file
     void loadModel(const std::string& filepath);
 
@@ -123,6 +134,9 @@ private:
     glm::vec3 rotationAxis;
     float rotationAngle;
     glm::vec3 scale;
+
+    // Current model file path
+    std::string currentFilePath;
 };
 
 #endif // MODEL_H

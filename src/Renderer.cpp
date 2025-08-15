@@ -15,7 +15,7 @@ Renderer::Renderer(Window& window, Camera& camera, Model& model)
     LightID(0),
     AmbientLightID(0),
     Projection(glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f)),
-    ambientLightIntensity(0.2f, 0.2f, 0.2f),
+    ambientLightIntensity(0.5f, 0.5f, 0.5f),
     vao(0),
     vbo(0),
     lightPos(0.0f, 0.0f, 0.0f),
@@ -100,7 +100,6 @@ void Renderer::renderGroundWithShadows(const glm::mat4& view, const glm::mat4& p
 // Render model with shadows
 void Renderer::renderModelWithShadows(const glm::mat4& View, const glm::mat4& Projection) {
     glUseProgram(programShaderID);
-
     MatrixUniformLocations(programShaderID);
 
     // Get the light space matrix from the ShadowMap class
@@ -140,11 +139,17 @@ void Renderer::renderScene() {
         renderToTheDepthTexture();
     }
 
+    // Clear the screen
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    // Set viewport
     int width, height;
     SDL_GetWindowSize(window.getWindow(), &width, &height);
     glViewport(0, 0, width, height);
+    
+    // Ensure proper OpenGL state
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);  // Enable face culling by default
 
     glm::mat4 View = camera.getViewMatrix();
     glm::mat4 Projection = glm::perspective(glm::radians(45.0f), (float)width / height, 0.1f, 100.0f);

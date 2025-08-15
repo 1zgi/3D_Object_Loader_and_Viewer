@@ -2,46 +2,137 @@
 #include <limits>  // For std::numeric_limits
 
 // Constructor
-Model::Model(const std::string& filepath) {
-    loadModel(filepath);
-    setupBuffers();
-    loadTextures();
-
-    // Calculate the bounding box
-    glm::vec3 min, max;
-    calculateBoundingBox(min, max);
-
-    // Calculate the scale factor to fit the model within a 1.0 unit box
-    glm::vec3 size = max - min;
-    float maxDimension = glm::max(glm::max(size.x, size.y), size.z);
-    float scaleFactor = 1.0f / maxDimension;
-
-    // Initialize transformation attributes
+Model::Model(const std::string& filepath) : currentFilePath(filepath) {
+    // Initialize transformation attributes first
     position = glm::vec3(0.0f);
     rotationAxis = glm::vec3(0.0f, 1.0f, 0.0f);
     rotationAngle = 0.0f;
-    scale = glm::vec3(scaleFactor);
+    scale = glm::vec3(1.0f);
+    needsLowestPointUpdate = true;
 
-    needsLowestPointUpdate = true;  // Ensure the lowest point is calculated initially
+    // Initialize OpenGL IDs to 0
+    vao = 0;
+    vbo = 0;
+    nbo = 0;
+    tbo = 0;
+    ebo = 0;
+
+    // Only load model if filepath is provided and not empty
+    if (!filepath.empty()) {
+        loadModel(filepath);
+        setupBuffers();
+        loadTextures();
+
+        // Calculate the bounding box
+        glm::vec3 min, max;
+        calculateBoundingBox(min, max);
+
+        // Calculate the scale factor to fit the model within a 2.0 unit box (bigger and more visible)
+        glm::vec3 size = max - min;
+        float maxDimension = glm::max(glm::max(size.x, size.y), size.z);
+        float scaleFactor = 2.0f / maxDimension;  // Make it 2x bigger
+        scale = glm::vec3(scaleFactor);
+    } else {
+        std::cout << "Model initialized without file. Use 'Browse Models...' to load an OBJ file." << std::endl;
+    }
 }
 
 // Destructor to clean up OpenGL buffers
 Model::~Model() {
-    glDeleteBuffers(1, &vbo);
-    if (!normals.empty()) {
+    cleanup();
+}
+
+// Clean up all OpenGL resources
+void Model::cleanup() {
+    if (vbo) {
+        glDeleteBuffers(1, &vbo);
+        vbo = 0;
+    }
+    if (nbo && !normals.empty()) {
         glDeleteBuffers(1, &nbo);
+        nbo = 0;
     }
-    if (!texcoords.empty()) {
+    if (tbo && !texcoords.empty()) {
         glDeleteBuffers(1, &tbo);
+        tbo = 0;
     }
-    if (!indices.empty()) {
+    if (ebo && !indices.empty()) {
         glDeleteBuffers(1, &ebo);
+        ebo = 0;
     }
-    glDeleteVertexArrays(1, &vao);
+    if (vao) {
+        glDeleteVertexArrays(1, &vao);
+        vao = 0;
+    }
 
     for (GLuint texture : textures) {
-        glDeleteTextures(1, &texture);
+        if (texture) {
+            glDeleteTextures(1, &texture);
+        }
     }
+    textures.clear();
+    specularTextures.clear();
+    
+    // Clear all data vectors
+    vertices.clear();
+    normals.clear();
+    texcoords.clear();
+    indices.clear();
+    materials.clear();
+    face_material_ids.clear();
+    diffuseColors.clear();
+}
+
+// Reload a new model at runtime
+bool Model::reloadModel(const std::string& filepath) {
+    try {
+        std::cout << "Reloading model: " << filepath << std::endl;
+        
+        // Clean up existing resources
+        cleanup();
+        
+        // Update the current file path
+        currentFilePath = filepath;
+        
+        // Load the new model
+        loadModel(filepath);
+        setupBuffers();
+        loadTextures();
+        
+        // Recalculate bounding box and scale
+        glm::vec3 min, max;
+        calculateBoundingBox(min, max);
+        
+        glm::vec3 size = max - min;
+        float maxDimension = glm::max(glm::max(size.x, size.y), size.z);
+        float scaleFactor = 2.0f / maxDimension;  // Make it 2x bigger
+        
+        // Reset transformations but keep current position and rotation
+        scale = glm::vec3(scaleFactor);
+        needsLowestPointUpdate = true;
+        
+        std::cout << "Model reloaded successfully!" << std::endl;
+        return true;
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Failed to reload model: " << e.what() << std::endl;
+        return false;
+    }
+}
+
+// Get current model file path
+const std::string& Model::getCurrentFilePath() const {
+    return currentFilePath;
+}
+
+// Get vertex count
+size_t Model::getVertexCount() const {
+    return vertices.size() / 3; // 3 components per vertex
+}
+
+// Get face count
+size_t Model::getFaceCount() const {
+    return indices.size() / 3; // 3 indices per triangle
 }
 
 // Load textures using stb_image
@@ -108,18 +199,15 @@ void Model::loadTextures() {
 void Model::loadModel(const std::string& filepath) {
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
-    std::string warn, err;
+    std::string err;
 
-    std::string base_dir = filepath.substr(0, filepath.find_last_of('/'));
+    // Get base directory for material files (handle both / and \ for Windows)
+    std::string base_dir = filepath.substr(0, filepath.find_last_of("/\\"));
     if (!base_dir.empty()) {
         base_dir += "/";
     }
 
     bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &err, filepath.c_str(), base_dir.c_str());
-
-    if (!warn.empty()) {
-        std::cout << "WARN: " << warn << std::endl;
-    }
 
     if (!err.empty()) {
         std::cerr << "ERR: " << err << std::endl;
@@ -130,10 +218,18 @@ void Model::loadModel(const std::string& filepath) {
         return;
     }
 
-    // Debug output
-    for (const auto& material : materials) {
-        std::cout << "Material name: " << material.name << std::endl;
-        std::cout << "Diffuse texture: " << material.diffuse_texname << std::endl;
+    // If no materials loaded, create a default material
+    if (materials.empty()) {
+        std::cout << "No materials found. Creating default material." << std::endl;
+        tinyobj::material_t defaultMat;
+        defaultMat.name = "default";
+        defaultMat.diffuse[0] = 0.8f; // Light gray
+        defaultMat.diffuse[1] = 0.8f;
+        defaultMat.diffuse[2] = 0.8f;
+        defaultMat.ambient[0] = 0.2f;
+        defaultMat.ambient[1] = 0.2f;
+        defaultMat.ambient[2] = 0.2f;
+        materials.push_back(defaultMat);
     }
 
     // Store diffuse colors for materials
@@ -148,6 +244,11 @@ void Model::loadModel(const std::string& filepath) {
         for (size_t f = 0; f < shape.mesh.num_face_vertices.size(); f++) {
             int fv = shape.mesh.num_face_vertices[f];
             int material_id = shape.mesh.material_ids[f];
+            
+            // If no material assigned (-1), use first material (default)
+            if (material_id < 0) {
+                material_id = 0;
+            }
 
             face_material_ids.push_back(material_id);
 
@@ -241,6 +342,13 @@ void Model::calculateBoundingBox(glm::vec3& min, glm::vec3& max) const { //Fits 
 
 // Method to render the model
 void Model::draw(GLuint programID) const {
+    // Don't draw if no model is loaded
+    if (vertices.empty() || indices.empty() || vao == 0) {
+        return;
+    }
+
+
+
     // Bind the VAO for the model
     glBindVertexArray(vao);
 
