@@ -139,3 +139,8 @@ float Lights::getCutOff() const {
 float Lights::getOuterCutOff() const {
     return outerCutOff;
 }
+
+LightType Lights::getLightType()const
+{
+    return type;
+}

@@ -43,16 +43,40 @@ void ImGuiApp::Run(Renderer* renderer, Model* model) {
     // Calculate the scalar intensity as the average of the components(or use length for different logic)
     float ambientIntensity = (currentAmbientIntensity.x + currentAmbientIntensity.y + currentAmbientIntensity.z) / 3.0f;
 
-    // Add controls for ambient light intensity
+    // Add controls for ambient light intensity and model rotation
     ImGui::Begin("Ambient Light Control");
-    if (ImGui::SliderFloat("Ambient Intensity", &ambientIntensity, 0.2f, 1.0f)) {
+    if (ImGui::SliderFloat("Ambient Intensity", &ambientIntensity, 0.0f, 1.0f)) {
       // Update ambientLightIntensity uniformly with the new value
       renderer->setAmbientLightIntensity(glm::vec3(ambientIntensity));
     }
+    
+    ImGui::Separator();
+    
+    // Auto rotation controls
+    bool autoRotate = renderer->getAutoRotation();
+    if (ImGui::Checkbox("Auto Rotate Model", &autoRotate)) {
+        renderer->setAutoRotation(autoRotate);
+    }
+    
+    if (autoRotate) {
+        static float rotSpeed = 30.0f;
+        if (ImGui::SliderFloat("Rotation Speed (°/s)", &rotSpeed, 5.0f, 120.0f)) {
+            renderer->setRotationSpeed(rotSpeed);
+        }
+    }
+    
+    ImGui::Separator();
+    
+    // Shadow controls
+    bool shadowsEnabled = renderer->getShadowsEnabled();
+    if (ImGui::Checkbox("Enable Shadows", &shadowsEnabled)) {
+        renderer->setShadowsEnabled(shadowsEnabled);
+    }
+    
     ImGui::End();
 
    // Render your scene
-   renderer->renderScene(*model);
+   renderer->renderScene();
 
    // Rendering ImGui
    ImGui::Render();

@@ -50,6 +50,8 @@ public:
     void enablePointLights(GLuint programID, int i);
     void enableSpotLights(GLuint programID, int i);
 
+    LightType getLightType()const;
+
 private:
     LightType type;
 

@@ -1,7 +1,5 @@
 #include "headers/InfiniteGround.h"
-#include <glm/gtc/matrix_transform.hpp>
-#include <GL/glew.h>
-#include <iostream>
+
 
 // Vertices (position + normal) for a simple quad ground plane
 float quadVertices[] = {
@@ -30,46 +28,69 @@ InfiniteGround::~InfiniteGround() {
 void InfiniteGround::initGround(GLuint shaderProgram) {
     setShader(shaderProgram);
     setupBuffers();
+    modelMatrix = getGroundMatrix();
 }
 
-void InfiniteGround::renderGround(const glm::mat4& view, const glm::mat4& projection,
+void InfiniteGround::renderGround(GLuint shaderProgram, const glm::mat4& view, const glm::mat4& projection,
     std::vector<Lights>& directionalLights,
     std::vector<Lights>& pointLights,
     std::vector<Lights>& spotLights,
-    glm::vec3 backgroundcolor) 
+    glm::vec3 backgroundColor, ShadowMap& shadowMap, bool shadowsEnabled)
 {
-    GLuint backgroundColorLocation = glGetUniformLocation(GroundShaderID, "backgroundColor");
-    glUniform3fv(backgroundColorLocation, 1, &backgroundcolor[0]);
+    GLuint backgroundColorLocation = glGetUniformLocation(shaderProgram, "backgroundColor");
+    glUniform3fv(backgroundColorLocation, 1, &backgroundColor[0]);
 
     // Use the shader program for the ground
-    glUseProgram(GroundShaderID);
+    glUseProgram(shaderProgram);
+    shadowMap.bindForLightingPass(1);
 
-    modelMatrix = getGroundMatrix();
+    // Get the light space matrix from the ShadowMap class
+    glm::mat4 shadowMatrix = shadowMap.getLightSpaceMatrix();
 
     // Calculate the Model-View-Projection (MVP) matrix
-    glm::mat4 MVP = projection * view * modelMatrix;
+    glm::mat4 MVP = calculateMVP(modelMatrix,view,projection);
 
-    // Send the MVP matrix to the shader
-    glUniformMatrix4fv(glGetUniformLocation(GroundShaderID, "MVP"), 1, GL_FALSE, &MVP[0][0]);
+    sendMatrixToShader(shaderProgram,MVP,view);
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "lightSpaceMatrix"), 1, GL_FALSE, &shadowMap.getLightSpaceMatrix()[0][0]);
 
-    // Send the model matrix to the shader (for lighting calculations)
-    glUniformMatrix4fv(glGetUniformLocation(GroundShaderID, "M"), 1, GL_FALSE, &modelMatrix[0][0]);
+    // Set shadow uniforms
+    glUniform1f(glGetUniformLocation(shaderProgram, "shadowBias"), 0.01f);
+    glUniform1i(glGetUniformLocation(shaderProgram, "shadowMap"), 1);
+    glUniform1i(glGetUniformLocation(shaderProgram, "shadowsEnabled"), shadowsEnabled ? 1 : 0);
 
-    // Send the view matrix to the shader
-    glUniformMatrix4fv(glGetUniformLocation(GroundShaderID, "V"), 1, GL_FALSE, &view[0][0]);
-
+    // Set up lighting
     renderGroundLights(directionalLights, pointLights, spotLights);
 
     // Material color
     glm::vec3 materialSpecularColor = glm::vec3(1.0f, 1.0f, 1.0f);  // White specular
     float materialShininess = 35.0f;  // Shiny material
 
-    glUniform3fv(glGetUniformLocation(GroundShaderID, "materialDiffuseColor"), 1, &backgroundcolor[0]);
-    glUniform3fv(glGetUniformLocation(GroundShaderID, "materialSpecularColor"), 1, &materialSpecularColor[0]);
-    glUniform1f(glGetUniformLocation(GroundShaderID, "materialShininess"), materialShininess);
+    glUniform3fv(glGetUniformLocation(shaderProgram, "materialDiffuseColor"), 1, &backgroundColor[0]);
+    glUniform3fv(glGetUniformLocation(shaderProgram, "materialSpecularColor"), 1, &materialSpecularColor[0]);
+    glUniform1f(glGetUniformLocation(shaderProgram, "materialShininess"), materialShininess);
 
+    // Draw the ground
     DrawGround();
 }
+
+glm::mat4 InfiniteGround::calculateMVP(const glm::mat4& modelMatrix, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) {
+    return projectionMatrix * viewMatrix * modelMatrix;
+}
+
+void InfiniteGround::sendMatrixToShader(GLuint shaderProgram, glm::mat4 MVP, const glm::mat4& view)
+{
+    // Send the MVP matrix to the shader
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "MVP"), 1, GL_FALSE, &MVP[0][0]);
+
+    // Send the model matrix to the shader (for lighting calculations)
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "M"), 1, GL_FALSE, &modelMatrix[0][0]);
+
+    // Send the view matrix to the shader
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "V"), 1, GL_FALSE, &view[0][0]);
+
+
+}
+
 
 void InfiniteGround::renderGroundLights(std::vector<Lights>& directionalLights, std::vector<Lights>& pointLights, std::vector<Lights>& spotLights)
 {

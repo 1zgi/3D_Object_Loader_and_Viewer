@@ -17,12 +17,12 @@ int main(int argc, char* args[]) {
         return -1;
     }
 
-    Renderer renderer(window, camera);
+    Model model("models/obj/Earth.obj");
+
+    Renderer renderer(window, camera, model);
     if (!renderer.init()) {
         return -1;
     }
-
-    Model model("models/obj/Earth.obj");
 
     bool running = true;
     bool mouseCapturedByImGui = false;
@@ -89,7 +89,7 @@ int main(int argc, char* args[]) {
         const Uint8* state = SDL_GetKeyboardState(NULL);
 
         // Render the model with the renderer
-        renderer.renderScene(model);
+        renderer.renderScene();
 
         // Run ImGui interface
         imguiApp.Run(&renderer, &model);
