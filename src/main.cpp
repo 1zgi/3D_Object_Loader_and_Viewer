@@ -2,22 +2,81 @@
 #include "headers/Renderer.h"
 #include "headers/ImGuiApp.h"
 #include "headers/Camera.h"
-#include "headers/Model.h" 
+#include "headers/Model.h"
+#include <iostream>
+#include <string>
+
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#include <windows.h>
+#include <commdlg.h>
+#undef byte  // Prevent conflicts with std::byte
+#endif
 
 const int SCREEN_WIDTH = 1024;
 const int SCREEN_HEIGHT = 768;
 
-int main(int argc, char* args[]) {
-    Window window(SCREEN_WIDTH, SCREEN_HEIGHT);
+// Function to show file dialog and get OBJ file path
+std::string showFileDialog() {
+#ifdef _WIN32
+    OPENFILENAMEA ofn;
+    char szFile[260] = { 0 };
+    
+    ZeroMemory(&ofn, sizeof(ofn));
+    ofn.lStructSize = sizeof(ofn);
+    ofn.lpstrFile = szFile;
+    ofn.nMaxFile = sizeof(szFile);
+    ofn.lpstrFilter = "OBJ Files\0*.obj\0All Files\0*.*\0";
+    ofn.nFilterIndex = 1;
+    ofn.lpstrFileTitle = NULL;
+    ofn.nMaxFileTitle = 0;
+    ofn.lpstrInitialDir = NULL;
+    ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
+    ofn.lpstrTitle = "Select OBJ Model File";
+    
+    if (GetOpenFileNameA(&ofn)) {
+        return std::string(szFile);
+    }
+#endif
+    return "";
+}
 
-    Camera camera(glm::vec3(-2.0f, 1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+int main(int argc, char* args[]) {
+    std::string modelPath;
+    bool hasInitialModel = false;
+    
+    // Check if a file path was provided as command line argument
+    if (argc >= 2) {
+        modelPath = args[1];
+        
+        // Verify the file exists and has .obj extension
+        if (modelPath.length() >= 4 && modelPath.substr(modelPath.length() - 4) == ".obj") {
+            std::cout << "Loading model from command line: " << modelPath << std::endl;
+            hasInitialModel = true;
+        } else {
+            std::cerr << "Error: Please provide a valid .obj file!" << std::endl;
+            std::cerr << "Usage: " << args[0] << " [path_to_model.obj]" << std::endl;
+            return -1;
+        }
+    } else {
+        std::cout << "Starting 3D Object Loader and Viewer..." << std::endl;
+        std::cout << "Use 'Browse Models...' to load an OBJ file, or drag and drop a file into the window." << std::endl;
+    }
+
+    Window window(SCREEN_WIDTH, SCREEN_HEIGHT);
+    Camera camera(glm::vec3(-3.0f, 2.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
     if (!window.init()) {
         std::cerr << "Failed to initialize window\n";
         return -1;
     }
 
-    Model model("models/obj/Earth.obj");
+    // Enable drag and drop
+    SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
+
+    // Create model - either with initial file or empty
+    Model model(hasInitialModel ? modelPath : "");
 
     Renderer renderer(window, camera, model);
     if (!renderer.init()) {
@@ -81,6 +140,28 @@ int main(int argc, char* args[]) {
             case SDL_MOUSEWHEEL:
                  camera.handleMouseScroll(static_cast<float>(event.wheel.y));  // y is positive for zoom in, negative for zoom out
                 break; 
+                
+            case SDL_DROPFILE:
+                {
+                    char* droppedFile = event.drop.file;
+                    std::string filePath(droppedFile);
+                    
+                    std::cout << "File dropped: " << filePath << std::endl;
+                    
+                    // Check if it's an OBJ file
+                    if (filePath.size() > 4 && filePath.substr(filePath.size() - 4) == ".obj") {
+                        if (model.reloadModel(filePath)) {
+                            std::cout << "Model loaded successfully via drag & drop!" << std::endl;
+                        } else {
+                            std::cerr << "Failed to load dropped model!" << std::endl;
+                        }
+                    } else {
+                        std::cout << "Dropped file is not an OBJ file" << std::endl;
+                    }
+                    
+                    SDL_free(droppedFile);  // Free the memory
+                }
+                break;
             }
 
             ImGui_ImplSDL2_ProcessEvent(&event);

@@ -10,10 +10,10 @@ float quadVertices[] = {
     -500.0f,  0.0f,  500.0f,   0.0f, 1.0f, 0.0f   // Top-left
 };
 
-// Reverse the winding order to flip normals
+// Proper winding order for top face visibility (counter-clockwise when viewed from above)
 unsigned int quadIndices[] = {
-    0, 3, 2,   // Triangle 1
-    2, 1, 0    // Triangle 2
+    0, 2, 1,   // Triangle 1: bottom-left → top-right → bottom-right 
+    0, 3, 2    // Triangle 2: bottom-left → top-left → top-right
 };
 
 InfiniteGround::InfiniteGround()
