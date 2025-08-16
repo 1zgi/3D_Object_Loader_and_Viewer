@@ -14,6 +14,22 @@
 #undef byte  // Prevent conflicts with std::byte
 #endif
 
+// Function to get the directory where the executable is located
+std::string getExecutableDirectory() {
+#ifdef _WIN32
+    char path[MAX_PATH];
+    GetModuleFileNameA(NULL, path, MAX_PATH);
+    std::string exePath(path);
+    size_t lastSlash = exePath.find_last_of("\\/");
+    if (lastSlash != std::string::npos) {
+        return exePath.substr(0, lastSlash);
+    }
+    return ".";
+#else
+    return ".";  // Fallback for other platforms
+#endif
+}
+
 const int SCREEN_WIDTH = 1024;
 const int SCREEN_HEIGHT = 768;
 
@@ -43,6 +59,13 @@ std::string showFileDialog() {
 }
 
 int main(int argc, char* args[]) {
+    // Set working directory to executable directory to fix file association issues
+    std::string exeDir = getExecutableDirectory();
+    
+#ifdef _WIN32
+    SetCurrentDirectoryA(exeDir.c_str());
+#endif
+
     std::string modelPath;
     bool hasInitialModel = false;
     
@@ -55,9 +78,10 @@ int main(int argc, char* args[]) {
             std::cout << "Loading model from command line: " << modelPath << std::endl;
             hasInitialModel = true;
         } else {
-            std::cerr << "Error: Please provide a valid .obj file!" << std::endl;
-            std::cerr << "Usage: " << args[0] << " [path_to_model.obj]" << std::endl;
-            return -1;
+            // Invalid file - just start without a model instead of showing error
+            // This prevents crashes when file association is set up incorrectly
+            std::cout << "Note: File is not a .obj model, starting without loading it." << std::endl;
+            hasInitialModel = false;
         }
     } else {
         std::cout << "Starting 3D Object Loader and Viewer..." << std::endl;
