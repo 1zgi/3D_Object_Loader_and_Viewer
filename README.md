@@ -100,7 +100,7 @@ ViewMe_Distribution/
 - Use the ground plane as a reference for model size
 - Enable shadows for more realistic viewing
 - File association works great for quick model previewing
-- If you don't have any prepared .obj files, you can visit the models folder amoung the source code files
+- If you don't have any prepared .obj files, you can visit the "models" folder on top. Download & View with ViewMe.exe
 
 ## 📧 **Support**
 ViewMe is designed to be a simple, fast 3D model viewer. For issues with specific models, check that they follow standard Wavefront OBJ format.
