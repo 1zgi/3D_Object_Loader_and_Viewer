@@ -7,3 +7,6 @@
 #*packages.config
 common
 x64
+resource.h
+*.ico
+*.rc

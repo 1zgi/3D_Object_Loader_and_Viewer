@@ -65,13 +65,11 @@
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="models\sword\textures\Object001_mtl_baseColor.jpeg" />
-    <Image Include="ViewMe.ico" />
-  </ItemGroup>
-  <ItemGroup>
     <ResourceCompile Include="ViewMe.rc" />
   </ItemGroup>
-
+  <ItemGroup>
+    <Image Include="ViewMe.ico" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
@@ -85,6 +83,7 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
+    <TargetName>ViewMe</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -99,6 +98,7 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
+    <TargetName>ViewMe</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -126,13 +126,21 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IncludePath>$(ProjectDir)include\glm;$(ProjectDir)include\glew\include;$(ProjectDir)include;$(ProjectDir)..\packages\sdl2.nuget.2.30.7\build\native\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)lib\glew\lib;$(ProjectDir)..\packages\sdl2.nuget.2.30.7\build\native\lib\Win32;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IncludePath>$(ProjectDir)include\glm;$(ProjectDir)include\glew\include;$(ProjectDir)include;$(ProjectDir)..\packages\sdl2.nuget.2.30.7\build\native\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)lib\glew\lib;$(ProjectDir)..\packages\sdl2.nuget.2.30.7\build\native\lib\Win32;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>D:\ctrlrings\3D_Object_Loader_and_Viewer\3D_Object_Loader_and_Viewer\include\glm;D:\SDL2\SDL2-2.30.2\include;D:\ctrlrings\3D_Object_Loader_and_Viewer\3D_Object_Loader_and_Viewer\include\glew\include;D:\ctrlrings\3D_Object_Loader_and_Viewer\3D_Object_Loader_and_Viewer\include;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\SDL2\SDL2-2.30.2\lib\x64;D:\ctrlrings\3D_Object_Loader_and_Viewer\3D_Object_Loader_and_Viewer\lib\glew\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)include\glm;$(ProjectDir)include\glew\include;$(ProjectDir)include;$(ProjectDir)..\packages\sdl2.nuget.2.30.7\build\native\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)lib\glew\lib;$(ProjectDir)..\packages\sdl2.nuget.2.30.7\build\native\lib\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>D:\ctrlrings\3D_Object_Loader_and_Viewer\3D_Object_Loader_and_Viewer\include\glm;D:\SDL2\SDL2-2.30.2\include;D:\ctrlrings\3D_Object_Loader_and_Viewer\3D_Object_Loader_and_Viewer\include\glew\include;D:\ctrlrings\3D_Object_Loader_and_Viewer\3D_Object_Loader_and_Viewer\include;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\SDL2\SDL2-2.30.2\lib\x64;D:\ctrlrings\3D_Object_Loader_and_Viewer\3D_Object_Loader_and_Viewer\lib\glew\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)include\glm;$(ProjectDir)include\glew\include;$(ProjectDir)include;$(ProjectDir)..\packages\sdl2.nuget.2.30.7\build\native\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)lib\glew\lib;$(ProjectDir)..\packages\sdl2.nuget.2.30.7\build\native\lib\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -141,11 +149,16 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)lib\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;glew32.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /E /I /Y "$(ProjectDir)src\Shaders" "$(OutDir)src\Shaders"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -156,13 +169,18 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)lib\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;glew32.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /E /I /Y "$(ProjectDir)src\Shaders" "$(OutDir)src\Shaders"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -171,13 +189,16 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>D:\ctrlrings\3D_Object_Loader_and_Viewer\3D_Object_Loader_and_Viewer\lib\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)lib\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>SDL2.lib;SDL2main.lib;glew32.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /E /I /Y "$(ProjectDir)src\Shaders" "$(OutDir)src\Shaders"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -188,7 +209,7 @@
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>D:\ctrlrings\3D_Object_Loader_and_Viewer\3D_Object_Loader_and_Viewer\lib\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)lib\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -197,6 +218,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>SDL2.lib;SDL2main.lib;glew32.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /E /I /Y "$(ProjectDir)src\Shaders" "$(OutDir)src\Shaders"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

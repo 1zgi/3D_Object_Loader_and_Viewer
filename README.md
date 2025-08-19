@@ -51,6 +51,8 @@ ViewMe.exe
 - **Crash-Free** - Robust file handling
 
 ## **Technical Requirements**
+
+### **Windows**
 - **OS**: Windows 10/11 (64-bit)
 - **Graphics**: OpenGL 3.3+ compatible graphics card
 - **Dependencies**: All required libraries included (no installation needed)
