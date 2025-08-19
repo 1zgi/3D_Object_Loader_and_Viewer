@@ -57,23 +57,6 @@ ViewMe.exe
 - **Graphics**: OpenGL 3.3+ compatible graphics card
 - **Dependencies**: All required libraries included (no installation needed)
 
-## 📂 **File Structure**
-```
-ViewMe_Distribution/
-├── ViewMe.exe                    # Main application
-├── SDL2.dll                     # Graphics & input library
-├── glfw3.dll                    # Window management
-├── glew32.dll                   # OpenGL extensions
-├── src/Shaders/                 # Graphics shaders (required)
-│   ├── vert.glsl               # Vertex shader
-│   ├── frag.glsl               # Fragment shader
-│   ├── shadowVert.glsl         # Shadow vertex shader
-│   ├── shadowFrag.glsl         # Shadow fragment shader
-│   ├── infiniteGroundVert.glsl # Ground vertex shader
-│   └── infiniteGroundFrag.glsl # Ground fragment shader
-└── README.md                    # This file
-```
-
 ## 🫨 **Troubleshooting**
 
 ### **ViewMe won't start:**
