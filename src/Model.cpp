@@ -142,10 +142,23 @@ void Model::loadTextures() {
     // Flip the image vertically on load
     stbi_set_flip_vertically_on_load(true);
 
+    // Get base directory from current model file path for relative texture paths
+    std::string base_dir = currentFilePath.substr(0, currentFilePath.find_last_of("/\\"));
+    if (!base_dir.empty()) {
+        base_dir += "/";
+    }
+
     for (size_t i = 0; i < materials.size(); i++) {
         const auto& material = materials[i];
         if (!material.diffuse_texname.empty()) {
             std::string texPath = material.diffuse_texname;
+            
+            // If texture path is relative (doesn't contain drive letter or start with /), 
+            // make it relative to the OBJ file location
+            if (texPath.find(':') == std::string::npos && texPath[0] != '/' && texPath[0] != '\\') {
+                texPath = base_dir + material.diffuse_texname;
+            }
+            
             std::cout << "Loading texture from path: " << texPath << std::endl;
 
             GLuint textureID;
