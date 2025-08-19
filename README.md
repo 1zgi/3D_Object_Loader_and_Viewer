@@ -93,7 +93,6 @@ ViewMe_Distribution/
 - Ensure the .mtl file is in the same directory as the .obj file
 - Check texture file paths in the .mtl file
 
-
 ## 💡 **Tips**
 - For best results, keep .obj, .mtl, and texture files in the same folder
 - ViewMe automatically scales models to fit the viewport
@@ -105,7 +104,10 @@ ViewMe_Distribution/
 ## 📧 **Support**
 ViewMe is designed to be a simple, fast 3D model viewer. For issues with specific models, check that they follow standard Wavefront OBJ format.
 
+## 📎 **Download**
+[ViewMe v1.0](https://github.com/1zgi/3D_Object_Loader_and_Viewer/releases/tag/vwm1.0)
+
 ---
 **ViewMe** - Fast, Simple 3D Model Viewing  
-**Version**: 1.1   
+**Version**: 1.0   
 **Build**: Release (August 2025)
