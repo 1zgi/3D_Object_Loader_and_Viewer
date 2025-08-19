@@ -1,9 +1,9 @@
 *.vcxproj.filters
-*.vcxproj
-*.sln
+#*.vcxproj
+#*.sln
 *.suo
 *.user
 *.vssscc
-*packages.config
+#*packages.config
 common
 x64
