@@ -3,16 +3,23 @@
 ## 🎯 **About**
 ViewMe is a lightweight, standalone 3D model viewer that can load and display Wavefront (.obj) 3D models with textures, lighting, and dynamic shadows. Perfect for previewing 3D models quickly and easily.
 
+
+![ViewMe_intro](https://github.com/user-attachments/assets/fbbd3a19-2602-46c4-9f1b-98436cd4c8aa)
+
+
 ## 🚀 **Quick Start**
 
 ### **Method 1: File Association (RECOMMENDED)**
 - Right-click any .obj file → "Open with" → Choose ViewMe.exe
 - Future .obj files can be opened by double-clicking
 
+![ViewMe_right_click_open (1)](https://github.com/user-attachments/assets/df4a9087-ea8f-4441-ab27-663c06716aaf)
+
 ### **Method 2: Command Line**
 ```bash
 ViewMe.exe "path/to/your/model.obj"
 ```
+![ViewMe_browser](https://github.com/user-attachments/assets/3818f697-33af-44cf-8e48-14cda3b1f52c)
 
 ### **Method 3: Browse in App**
 ```bash
