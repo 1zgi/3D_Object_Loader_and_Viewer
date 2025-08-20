@@ -1,7 +1,7 @@
 # ViewMe - 3D Viewer Desktop App
 
 ## 🎯 **About**
-ViewMe is a lightweight, standalone 3D model viewer that can load and display Wavefront (.obj) 3D models with textures, lighting, and dynamic shadows. Perfect for previewing 3D models quickly and easily.
+ViewMe is a straightforward 3D viewer desktop app that can load and display Wavefront (.obj) 3D models with textures, lighting, and dynamic shadows. Perfect for previewing 3D models quickly and easily.
 
 
 ![ViewMe_intro](https://github.com/user-attachments/assets/fbbd3a19-2602-46c4-9f1b-98436cd4c8aa)
@@ -39,8 +39,8 @@ ViewMe.exe
 ### **Interface Panel:**
 - **Ambient Light** - Adjust scene brightness (0-100%)
 - **Auto Rotate Model** - Enable/disable automatic rotation
-- **Rotation Speed** - Control rotation speed (5-120°/s)
-- **Enable Shadows** - Toggle realistic shadows on/off
+- **Rotation Speed** - Control rotation speed (5-120 degree/s)
+- **Enable Shadows** - Toggle shadows on/off
 - **Browse Models...** - Load new 3D models
 
 ## **Supported Files**
@@ -50,9 +50,9 @@ ViewMe.exe
 
 ## **Features**
 - **Instant Loading** - Fast 3D model loading
-- **Dynamic Shadows** - Realistic shadow mapping with soft edges
+- **Dynamic Shadows** - Shadow mapping with soft edges
 - **Multiple Lighting** - Advanced lighting system
-- **Auto-Rotation** - Showcase models from all angles
+- **Auto-Rotation** - Inspect models from all angles
 - **File Association** - Right-click on .obj files and "select ViewMe as open with" to view the .obj file
 - **Texture Support** - Full material and texture rendering
 - **No Installation** - Portable executable
@@ -88,10 +88,10 @@ ViewMe.exe
 
 ## 💡 **Tips**
 - For best results, keep .obj, .mtl, and texture files in the same folder
-- ViewMe automatically scales models to fit the viewport
-- Use the ground plane as a reference for model size
+- ViewMe automatically scales models to fit in the viewport
+- The ground plane contains reference for model size
 - Enable shadows for more realistic viewing
-- File association works great for quick model previewing
+- File association works well for quick model previewing
 - If you don't have any prepared .obj files, you can visit the "models" folder on top. Download & View
 
 ## 📧 **Support**
