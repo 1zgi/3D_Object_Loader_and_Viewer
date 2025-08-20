@@ -13,7 +13,7 @@ ViewMe is a lightweight, standalone 3D model viewer that can load and display Wa
 - Right-click any .obj file → "Open with" → Choose ViewMe.exe
 - Future .obj files can be opened by double-clicking
 
-![ViewMe_right_click_open (1)](https://github.com/user-attachments/assets/df4a9087-ea8f-4441-ab27-663c06716aaf)
+![ViewMe_right_click_open_gif](https://github.com/user-attachments/assets/bcf14761-f91b-49ff-a0db-ad27a93d98a7)
 
 ### **Method 2: Command Line**
 ```bash
