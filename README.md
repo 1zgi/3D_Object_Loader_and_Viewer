@@ -99,7 +99,7 @@ ViewMe.exe
 ViewMe is designed to be a simple, fast 3D model viewer. For issues with specific models, check that they follow standard Wavefront OBJ format.
 
 ## 📎 **Download**
-[ViewMe v1.0](https://github.com/1zgi/3D_Object_Loader_and_Viewer/releases/tag/vwm1.0)
+[ViewMe v1.0](https://github.com/1zgi/3D_Object_Loader_and_Viewer/releases/tag/vwm1.0.0)
 
 ---
 **ViewMe** - Fast, Simple 3D Model Viewing  
