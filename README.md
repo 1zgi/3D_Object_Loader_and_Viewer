@@ -19,7 +19,6 @@ ViewMe is a lightweight, standalone 3D model viewer that can load and display Wa
 ```bash
 ViewMe.exe "path/to/your/model.obj"
 ```
-![ViewMe_browser](https://github.com/user-attachments/assets/3818f697-33af-44cf-8e48-14cda3b1f52c)
 
 ### **Method 3: Browse in App**
 ```bash
@@ -28,6 +27,8 @@ ViewMe.exe
 - Application starts clean
 - Click "Browse Models..." to select any .obj file
 - Navigate to any folder on your computer
+
+![ViewMe_browser](https://github.com/user-attachments/assets/3818f697-33af-44cf-8e48-14cda3b1f52c)
 
 ## 🎮 **Controls**
 
