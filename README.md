@@ -1,4 +1,4 @@
-# ViewMe - 3D Model Viewer Desktop App
+# ViewMe - 3D Viewer Desktop App
 
 ## 🎯 **About**
 ViewMe is a lightweight, standalone 3D model viewer that can load and display Wavefront (.obj) 3D models with textures, lighting, and dynamic shadows. Perfect for previewing 3D models quickly and easily.
