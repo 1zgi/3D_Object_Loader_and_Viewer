@@ -10,3 +10,5 @@ x64
 resource.h
 *.ico
 *.rc
+*.ini
+/cmake-build-debug/
