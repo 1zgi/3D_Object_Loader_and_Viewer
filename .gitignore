@@ -12,3 +12,23 @@ resource.h
 *.rc
 *.ini
 /cmake-build-debug/
+# JetBrains / CLion
+.idea/
+*.iml
+
+# CMake build dirs (CLion)
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+Makefile
+cmake_install.cmake
+install_manifest.txt
+
+# macOS cruft
+.DS_Store
+
+!.idea/codeStyles/
+!.idea/inspectionProfiles/
+!.idea/runConfigurations/
+!.idea/vcs.xml
+
