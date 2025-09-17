@@ -640,7 +640,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include </OpenGL_Works/SDL2_and_OpenGL/SDL2_and_OpenGL/include/glad/glad.h>
+#include <glad/glad.h>
 
 static void* get_proc(const char *namez);
 
