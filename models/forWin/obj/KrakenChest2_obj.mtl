@@ -9,7 +9,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.100000
 d 1.000000
 illum 2
-map_Kd D:/ctrlrings/3D_Object_Loader_and_Viewer/3D_Object_Loader_and_Viewer/models/TexturesKreaken/KrakenChest2_obj_Chest_BaseColor.png
+map_Kd D:/ctrlrings/3D_Object_Loader_and_Viewer/3D_Object_Loader_and_Viewer/models/forWin/TexturesKreaken/KrakenChest2_obj_Chest_BaseColor.png
 
 newmtl Stairs.001
 Ns 1000.000000
@@ -19,7 +19,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.100000
 d 1.000000
 illum 2
-map_Kd D:/ctrlrings/3D_Object_Loader_and_Viewer/3D_Object_Loader_and_Viewer/models/TexturesKreaken/KrakenChest2_obj_Stairs_BaseColor.png
+map_Kd D:/ctrlrings/3D_Object_Loader_and_Viewer/3D_Object_Loader_and_Viewer/models/forWin/TexturesKreaken/KrakenChest2_obj_Stairs_BaseColor.png
 
 newmtl cannons.001
 Ns 1000.000000
@@ -29,7 +29,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.100000
 d 1.000000
 illum 2
-map_Kd D:/ctrlrings/3D_Object_Loader_and_Viewer/3D_Object_Loader_and_Viewer/models/TexturesKreaken/KrakenChest2_obj_cannons_BaseColor.png
+map_Kd D:/ctrlrings/3D_Object_Loader_and_Viewer/3D_Object_Loader_and_Viewer/models/forWin/TexturesKreaken/KrakenChest2_obj_cannons_BaseColor.png
 
 newmtl hinges.001
 Ns 1000.000000
@@ -39,7 +39,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.100000
 d 1.000000
 illum 2
-map_Kd D:/ctrlrings/3D_Object_Loader_and_Viewer/3D_Object_Loader_and_Viewer/models/TexturesKreaken/KrakenChest2_obj_hinges_BaseColor.png
+map_Kd D:/ctrlrings/3D_Object_Loader_and_Viewer/3D_Object_Loader_and_Viewer/models/forWin/TexturesKreaken/KrakenChest2_obj_hinges_BaseColor.png
 
 newmtl kraken_fancy.001
 Ns 1000.000000
@@ -49,7 +49,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.100000
 d 1.000000
 illum 2
-map_Kd D:/ctrlrings/3D_Object_Loader_and_Viewer/3D_Object_Loader_and_Viewer/models/TexturesKreaken/KrakenChest2_obj_kraken_fancy_BaseColor.png
+map_Kd D:/ctrlrings/3D_Object_Loader_and_Viewer/3D_Object_Loader_and_Viewer/models/forWin/TexturesKreaken/KrakenChest2_obj_kraken_fancy_BaseColor.png
 
 newmtl ship.001
 Ns 1000.000000
@@ -59,7 +59,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.100000
 d 1.000000
 illum 2
-map_Kd D:/ctrlrings/3D_Object_Loader_and_Viewer/3D_Object_Loader_and_Viewer/models/TexturesKreaken/KrakenChest2_obj_ship_BaseColor.png
+map_Kd D:/ctrlrings/3D_Object_Loader_and_Viewer/3D_Object_Loader_and_Viewer/models/forWin/TexturesKreaken/KrakenChest2_obj_ship_BaseColor.png
 
 newmtl tentacles.001
 Ns 893.884277
@@ -69,4 +69,4 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.100000
 d 1.000000
 illum 2
-map_Kd D:/ctrlrings/3D_Object_Loader_and_Viewer/3D_Object_Loader_and_Viewer/models/TexturesKreaken/KrakenChest2_obj_tentacles_BaseColor.png
+map_Kd D:/ctrlrings/3D_Object_Loader_and_Viewer/3D_Object_Loader_and_Viewer/models/forWin/TexturesKreaken/KrakenChest2_obj_tentacles_BaseColor.png
