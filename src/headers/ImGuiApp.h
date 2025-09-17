@@ -10,6 +10,9 @@
 #include <vector>
 #include "Renderer.h"
 #include "Window.h"
+#if defined(__APPLE__) || defined(__linux__)
+#include "tinyfiledialogs.h"
+#endif
 #include <SDL.h>
 #include <SDL_opengl.h>
 class ImGuiApp

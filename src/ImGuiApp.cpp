@@ -186,7 +186,6 @@ std::string ImGuiApp::showFileDialog() {
 #ifdef _WIN32
     OPENFILENAMEA ofn;
     char szFile[260] = { 0 };
-    
     ZeroMemory(&ofn, sizeof(ofn));
     ofn.lStructSize = sizeof(ofn);
     ofn.lpstrFile = szFile;
@@ -198,13 +197,20 @@ std::string ImGuiApp::showFileDialog() {
     ofn.lpstrInitialDir = NULL;
     ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
     ofn.lpstrTitle = "Select OBJ Model File";
-    
-    if (GetOpenFileNameA(&ofn)) {
-        return std::string(szFile);
-    }
-#endif
+    if (GetOpenFileNameA(&ofn)) return std::string(szFile);
     return "";
+#else
+    const char* patterns[] = { "*.obj" };
+    const char* path = tinyfd_openFileDialog(
+        "Open OBJ",
+        currentDirectory.c_str(),   // başlangıç klasörü
+        1, patterns, "OBJ files",
+        0                           // multi-select yok
+    );
+    return path ? std::string(path) : std::string();
+#endif
 }
+
 
 // Refresh directory contents using Windows API (avoiding std::filesystem conflicts)
 void ImGuiApp::refreshDirectoryContents() {
