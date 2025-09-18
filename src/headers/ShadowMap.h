@@ -1,7 +1,7 @@
 #pragma once
 #ifndef SHADOWMAP_H
 #define SHADOWMAP_H
-#include <GL/glew.h>
+#include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <iostream>

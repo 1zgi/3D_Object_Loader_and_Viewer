@@ -1,5 +1,27 @@
 #include "headers/Renderer.h"
+#include <glad/glad.h>
 #include <SDL.h>
+
+#ifdef __APPLE__
+#include <CoreFoundation/CoreFoundation.h>
+#include <string>
+
+std::string getResourcePath() {
+    CFBundleRef mainBundle = CFBundleGetMainBundle();
+    CFURLRef resourcesURL = CFBundleCopyResourcesDirectoryURL(mainBundle);
+    char path[PATH_MAX];
+    if (!CFURLGetFileSystemRepresentation(resourcesURL, TRUE, (UInt8 *)path, PATH_MAX)) {
+        CFRelease(resourcesURL);
+        return "src/"; // Fallback to relative path
+    }
+    CFRelease(resourcesURL);
+    return std::string(path) + "/";
+}
+#else
+std::string getResourcePath() {
+    return "src/"; // For non-macOS platforms, use relative path
+}
+#endif
 
 Renderer::Renderer(Window& window, Camera& camera, Model& model)
     : window(window),
@@ -32,12 +54,7 @@ Renderer::~Renderer() {
 }
 
 bool Renderer::init() {
-    // Initialize OpenGL, shaders, and GLEW
-    glewExperimental = GL_TRUE;
-    if (glewInit() != GLEW_OK) {
-        fprintf(stderr, "Failed to initialize GLEW\n");
-        return false;
-    }
+    // Initialize OpenGL state (GLAD is loaded in Window::init)
 
     // Set the background (clear) color
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -50,9 +67,10 @@ bool Renderer::init() {
     glFrontFace(GL_CCW);
 
     // Load the shader programs
-    programShaderID = LoadShaders("src/shaders/vert.glsl", "src/shaders/frag.glsl");
-    infiniteGroundShaderID = LoadShaders("src/shaders/infiniteGroundVert.glsl", "src/shaders/infiniteGroundFrag.glsl");
-    shadowMapShaderID = LoadShaders("src/shaders/shadowVert.glsl", "src/shaders/shadowFrag.glsl");
+    std::string resourcePath = getResourcePath();
+    programShaderID = LoadShaders((resourcePath + "shaders/vert.glsl").c_str(), (resourcePath + "shaders/frag.glsl").c_str());
+    infiniteGroundShaderID = LoadShaders((resourcePath + "shaders/infiniteGroundVert.glsl").c_str(), (resourcePath + "shaders/infiniteGroundFrag.glsl").c_str());
+    shadowMapShaderID = LoadShaders((resourcePath + "shaders/shadowVert.glsl").c_str(), (resourcePath + "shaders/shadowFrag.glsl").c_str());
 
     if (programShaderID == 0 || infiniteGroundShaderID == 0 || shadowMapShaderID == 0) {
         fprintf(stderr, "Failed to load shaders\n"); 

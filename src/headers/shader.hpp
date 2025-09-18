@@ -8,7 +8,7 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm>
-#include <GL/glew.h>
+#include <glad/glad.h>
 #include <SDL.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>

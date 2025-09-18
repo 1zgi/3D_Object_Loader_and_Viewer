@@ -3,7 +3,7 @@
 #define LIGHTS_H
 
 #include <glm/glm.hpp>
-#include <GL/glew.h>
+#include <glad/glad.h>
 #include <string>
 #include <vector>
 

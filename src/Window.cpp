@@ -1,5 +1,5 @@
 #include "headers/Window.h"
-#include <GL/glew.h>
+#include <glad/glad.h>
 #include <iostream>
 
 Window::Window(int width, int height)
@@ -43,10 +43,9 @@ bool Window::init() {
         return false;
     }
 
-    // Initialize GLEW after the context is created
-    glewExperimental = GL_TRUE;  // Enable modern OpenGL function loading
-    if (glewInit() != GLEW_OK) {
-        std::cerr << "Failed to initialize GLEW" << std::endl;
+    // Load OpenGL functions via GLAD after the context is created
+    if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
+        std::cerr << "Failed to initialize GLAD" << std::endl;
         SDL_GL_DeleteContext(context);
         SDL_DestroyWindow(window);
         SDL_Quit();

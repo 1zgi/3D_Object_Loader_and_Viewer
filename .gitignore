@@ -24,6 +24,21 @@ Makefile
 cmake_install.cmake
 install_manifest.txt
 
+# Build artifacts and directories
+build/
+build.ninja
+.ninja_deps
+.ninja_log
+Testing/
+CTestTestfile.cmake
+
+# Generated app bundles (keep only release versions)
+*.app
+!ViewMe_Release.app
+
+# ImGui config (user-specific)
+imgui.ini
+
 # macOS cruft
 .DS_Store
 
