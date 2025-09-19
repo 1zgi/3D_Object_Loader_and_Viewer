@@ -8,10 +8,15 @@ if(APPLE)
     add_compile_definitions(GL_SILENCE_DEPRECATION)
 endif()
 
-# Homebrew packages (add -DCMAKE_PREFIX_PATH=/opt/homebrew if needed)
-find_package(SDL2 CONFIG REQUIRED)
-find_package(glm CONFIG REQUIRED)
+# OpenGL (system framework)
 find_package(OpenGL REQUIRED)
+
+# SDL2 (will be bundled for distribution)
+find_package(SDL2 CONFIG REQUIRED)
+
+# GLM (header-only) - use local include instead of Homebrew package
+# find_package(glm CONFIG REQUIRED) # REMOVED - was causing dynamic linking
+set(GLM_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include/glm)
 
 add_executable(ViewMe
         # Your sources
@@ -76,13 +81,14 @@ target_include_directories(ViewMe PRIVATE
         ${CMAKE_SOURCE_DIR}/include
         ${CMAKE_SOURCE_DIR}/lib/imgui
         ${CMAKE_SOURCE_DIR}/src/headers
+        ${GLM_INCLUDE_DIR}  # GLM header-only include
 )
 
-# Link libs
+# Link libs (GLM removed - header-only)
 target_link_libraries(ViewMe PRIVATE
         SDL2::SDL2
         OpenGL::GL
-        glm::glm
+        # glm::glm REMOVED - header-only, no linking needed
 )
 
 # Link CoreFoundation on macOS for bundle resource path
@@ -98,4 +104,46 @@ if(MSVC)
     target_compile_options(ViewMe PRIVATE /W4)
 else()
     target_compile_options(ViewMe PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+
+# macOS: Bundle SDL2 and fix library paths for standalone distribution
+if(APPLE)
+    # Create Frameworks directory and copy SDL2
+    add_custom_command(TARGET ViewMe POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory
+                "$<TARGET_BUNDLE_DIR:ViewMe>/Contents/Frameworks"
+        COMMENT "Creating Frameworks directory"
+    )
+    
+    # Copy SDL2 dylib to Frameworks
+    add_custom_command(TARGET ViewMe POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+                "$<TARGET_FILE:SDL2::SDL2>"
+                "$<TARGET_BUNDLE_DIR:ViewMe>/Contents/Frameworks/"
+        COMMENT "Copying SDL2 to app bundle"
+    )
+    
+    # Fix SDL2 library path to use @executable_path
+    add_custom_command(TARGET ViewMe POST_BUILD
+        COMMAND install_name_tool -change 
+                "/opt/homebrew/opt/sdl2/lib/libSDL2-2.0.0.dylib"
+                "@executable_path/../Frameworks/libSDL2-2.0.0.dylib"
+                "$<TARGET_FILE:ViewMe>"
+        COMMENT "Fixing SDL2 library path"
+    )
+    
+    # Add rpath for Frameworks directory
+    add_custom_command(TARGET ViewMe POST_BUILD
+        COMMAND install_name_tool -add_rpath 
+                "@executable_path/../Frameworks"
+                "$<TARGET_FILE:ViewMe>"
+        COMMENT "Adding Frameworks rpath"
+    )
+    
+    # Code sign the app (ad-hoc for development)
+    add_custom_command(TARGET ViewMe POST_BUILD
+        COMMAND codesign --force --deep --sign - 
+                "$<TARGET_BUNDLE_DIR:ViewMe>"
+        COMMENT "Code signing app bundle"
+    )
 endif()
