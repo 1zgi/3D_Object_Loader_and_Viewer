@@ -76,6 +76,13 @@ namespace detail
 	{
 		return (t * t * t) * (t * (t * static_cast<T>(6) - static_cast<T>(15)) + static_cast<T>(10));
 	}
+
+	template<typename T>
+	GLM_FUNC_QUALIFIER T fog(T const& distance, T const& start, T const& end)
+	{
+		T factor = (distance - start) / (end - start);
+		return (factor < static_cast<T>(0)) ? static_cast<T>(0) : (factor > static_cast<T>(1)) ? static_cast<T>(1) : factor;
+	}
 }//namespace detail
 }//namespace glm
 
